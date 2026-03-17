@@ -15,3 +15,5 @@ export const GRAVITY = 800
 export const PLAYER_SPEED  = 300   // px / s horizontal run speed
 export const JUMP_VELOCITY = -550  // px / s upward (negative = up in Phaser)
 export const PLAYER_SCALE  = 0.5   // display scale applied to the raw spritesheet frame
+
+export const STORE_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'

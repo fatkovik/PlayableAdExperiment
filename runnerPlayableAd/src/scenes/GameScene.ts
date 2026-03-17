@@ -3,6 +3,7 @@ import { Background } from '../objects/Background'
 import { Player } from '../objects/Player'
 import { Obstacle } from '../objects/Obstacle'
 import { Coin } from '../objects/Coin'
+import { FinishLine } from '../objects/FinishLine'
 import { WORLD_WIDTH, WORLD_HEIGHT, GROUND_Y, GROUND_HEIGHT } from '../config/gameConfig'
 import { LEVEL_DATA } from '../config/levelData'
 
@@ -13,6 +14,7 @@ export class GameScene extends Phaser.Scene {
   private player!: Player
   private coinCount = 0
   private coinText!: Phaser.GameObjects.Text
+  private finishLine!: FinishLine
 
   constructor() {
     super({ key: 'GameScene' })
@@ -51,6 +53,9 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // ── Finish line ───────────────────────────────────────────────────────────
+    this.finishLine = new FinishLine(this)
+
     // ── Collisions ────────────────────────────────────────────────────────────
     this.physics.add.collider(this.player, ground)
 
@@ -65,6 +70,11 @@ export class GameScene extends Phaser.Scene {
       coin.collect()
       this.coinCount++
       this.coinText.setText(`$ ${this.coinCount}`)
+    })
+
+    // Finish line → win
+    this.physics.add.overlap(this.player, this.finishLine.getTriggerZone(), () => {
+      this.handleFinish()
     })
 
     // ── Camera ────────────────────────────────────────────────────────────────
@@ -84,9 +94,19 @@ export class GameScene extends Phaser.Scene {
       .setDepth(100)
   }
 
-  update(): void {
+  update(_time: number, dt: number): void {
     this.player.update()
     this.bg.update(this.cameras.main.scrollX)
+    this.finishLine.update(dt)
+  }
+
+  // ── Finish handling ────────────────────────────────────────────────────────
+  private handleFinish(): void {
+    if (this.player.isDead) return
+    this.player.halt()
+    this.finishLine.snap(() => {
+      this.scene.start('EndScene', { coins: this.coinCount })
+    })
   }
 
   // ── Death handling ──────────────────────────────────────────────────────────

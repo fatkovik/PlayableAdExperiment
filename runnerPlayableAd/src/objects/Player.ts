@@ -65,6 +65,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.play('jump', true)
   }
 
+  halt(): void {
+    if (this.isDead) return
+    this.isDead = true   // reuse flag to halt movement
+    this.play('idle', true)
+    const body = this.body as Phaser.Physics.Arcade.Body
+    body.setVelocityX(0)
+  }
+
   die(): void {
     if (this.isDead) return
     this.isDead = true

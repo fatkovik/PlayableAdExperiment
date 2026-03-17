@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { BootScene } from './scenes/BootScene'
 import { GameScene } from './scenes/GameScene'
+import { EndScene } from './scenes/EndScene'
 import { GRAVITY } from './config/gameConfig'
 
 new Phaser.Game({
@@ -12,5 +13,5 @@ new Phaser.Game({
     default: 'arcade',
     arcade: { gravity: { x: 0, y: GRAVITY }, debug: false },
   },
-  scene: [BootScene, GameScene],
+  scene: [BootScene, GameScene, EndScene],
 })
