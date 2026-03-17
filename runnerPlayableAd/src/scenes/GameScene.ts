@@ -1,11 +1,18 @@
 import Phaser from 'phaser'
 import { Background } from '../objects/Background'
 import { Player } from '../objects/Player'
+import { Obstacle } from '../objects/Obstacle'
+import { Coin } from '../objects/Coin'
 import { WORLD_WIDTH, WORLD_HEIGHT, GROUND_Y, GROUND_HEIGHT } from '../config/gameConfig'
+import { LEVEL_DATA } from '../config/levelData'
+
+const RESTART_DELAY = 1200   // ms after death before scene restarts
 
 export class GameScene extends Phaser.Scene {
   private bg!: Background
   private player!: Player
+  private coinCount = 0
+  private coinText!: Phaser.GameObjects.Text
 
   constructor() {
     super({ key: 'GameScene' })
@@ -30,25 +37,65 @@ export class GameScene extends Phaser.Scene {
 
     // ── Player ────────────────────────────────────────────────────────────────
     Player.createAnims(this.anims)
-    // Player origin is (0.5, 1.0), so y = GROUND_Y puts feet on the ground.
     this.player = new Player(this, 150, GROUND_Y)
+
+    // ── Obstacles & Coins from level data ─────────────────────────────────────
+    const obstacles = this.physics.add.staticGroup()
+    const coins = this.physics.add.staticGroup()
+
+    for (const item of LEVEL_DATA) {
+      if (item.type === 'obstacle') {
+        obstacles.add(new Obstacle(this, item.x, item.y))
+      } else {
+        coins.add(new Coin(this, item.x, item.y))
+      }
+    }
 
     // ── Collisions ────────────────────────────────────────────────────────────
     this.physics.add.collider(this.player, ground)
 
+    // Obstacle → die
+    this.physics.add.collider(this.player, obstacles, () => {
+      this.handleDeath()
+    })
+
+    // Coin → collect
+    this.physics.add.overlap(this.player, coins, (_player, coinObj) => {
+      const coin = coinObj as Coin
+      coin.collect()
+      this.coinCount++
+      this.coinText.setText(`$ ${this.coinCount}`)
+    })
+
     // ── Camera ────────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
-    // Offset keeps the player in the left-centre so more of the ahead is visible.
     this.cameras.main.startFollow(this.player, false, 1, 1)
     this.cameras.main.setFollowOffset(100, 0)
 
     // ── Input ─────────────────────────────────────────────────────────────────
     this.input.keyboard!.on('keydown-SPACE', () => { this.player.jump() })
     this.input.on('pointerdown', () => { this.player.jump() })
+
+    // ── HUD ───────────────────────────────────────────────────────────────────
+    this.coinCount = 0
+    this.coinText = this.add
+      .text(16, 16, '$ 0', { fontSize: '28px', color: '#ffffff', fontStyle: 'bold' })
+      .setScrollFactor(0)
+      .setDepth(100)
   }
 
   update(): void {
     this.player.update()
     this.bg.update(this.cameras.main.scrollX)
+  }
+
+  // ── Death handling ──────────────────────────────────────────────────────────
+  private handleDeath(): void {
+    if (this.player.isDead) return
+    this.player.die()
+
+    this.time.delayedCall(RESTART_DELAY, () => {
+      this.scene.restart()
+    })
   }
 }

@@ -19,6 +19,7 @@ const BODY_H = 80
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private isJumping = false
+  isDead = false
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player', 0)
@@ -56,6 +57,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   jump(): void {
+    if (this.isDead) return
     const body = this.body as Phaser.Physics.Arcade.Body
     if (!body.blocked.down) return   // single jump only
     this.isJumping = true
@@ -64,11 +66,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   die(): void {
+    if (this.isDead) return
+    this.isDead = true
     this.play('die', true)
-    ;(this.body as Phaser.Physics.Arcade.Body).setVelocityX(0)
+    const body = this.body as Phaser.Physics.Arcade.Body
+    body.setVelocityX(0)
+    body.setVelocityY(0)
   }
 
   update(): void {
+    if (this.isDead) return
     const body = this.body as Phaser.Physics.Arcade.Body
     body.setVelocityX(PLAYER_SPEED)
 
