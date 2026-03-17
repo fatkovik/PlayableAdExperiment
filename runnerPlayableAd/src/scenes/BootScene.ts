@@ -14,10 +14,15 @@ import {
   obstacle1Url,
 } from '../assets'
 
-// Frame dimensions measured from spritesheet pixel sizes:
-//   Player: 932×1506 → 4 cols × 9 rows → 233×167 px per frame
-//   Enemy:  1682×1771 → 8 cols × 10 rows → 210×177 px per frame
-const PLAYER_FRAME = { frameWidth: 233, frameHeight: 167 }
+// Player:  848×1233, 4 cols × 4 rows → 212×308 px per frame
+//   Row 0 (frames  0– 3): idle / standing still
+//   Row 1 (frames  4– 7): run
+//   Row 2 (frames  8–11): jump
+//   Row 3 (frames 12–15): hit / die
+// (1 px remainder at bottom is ignored by Phaser)
+const PLAYER_FRAME = { frameWidth: 212, frameHeight: 308 }
+
+// Enemy spritesheet: dimensions are approximate — TODO if frames look wrong.
 const ENEMY_FRAME = { frameWidth: 210, frameHeight: 177 }
 
 export class BootScene extends Phaser.Scene {
@@ -28,7 +33,6 @@ export class BootScene extends Phaser.Scene {
   preload(): void {
     this.createLoadingBar()
 
-    // Spritesheets
     this.load.spritesheet('player', playerSheetUrl, PLAYER_FRAME)
     this.load.spritesheet('enemy', enemySheetUrl, ENEMY_FRAME)
 

@@ -10,3 +10,8 @@ export const GROUND_HEIGHT = WORLD_HEIGHT - GROUND_Y   // 40 px
 
 // ── Physics ───────────────────────────────────────────────────────────────────
 export const GRAVITY = 800
+
+// ── Player ────────────────────────────────────────────────────────────────────
+export const PLAYER_SPEED  = 300   // px / s horizontal run speed
+export const JUMP_VELOCITY = -550  // px / s upward (negative = up in Phaser)
+export const PLAYER_SCALE  = 0.5   // display scale applied to the raw spritesheet frame
