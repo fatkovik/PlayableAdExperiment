@@ -7,14 +7,16 @@ const CONFETTI_SIZE = 6
 
 export class EndScene extends Phaser.Scene {
     private coinCount = 0
+    private won = true
     private pulseImg!: Phaser.GameObjects.Image
 
     constructor() {
         super({ key: 'EndScene' })
     }
 
-    init(data: { coins?: number }): void {
+    init(data: { coins?: number; won?: boolean }): void {
         this.coinCount = data.coins ?? 0
+        this.won = data.won ?? true
     }
 
     create(): void {
@@ -43,20 +45,26 @@ export class EndScene extends Phaser.Scene {
             ease: 'Linear',
         })
 
-        // ── Confetti particles ─────────────────────────────────────────────────
-        this.createConfetti(width)
+        // ── Confetti particles (win only) ────────────────────────────────────
+        if (this.won) {
+            this.createConfetti(width)
+        }
 
         // ── Title text ─────────────────────────────────────────────────────────
         const titleY = height * 0.12
-        const title = this.add.text(cx, titleY, 'Congratulations!', {
+        const titleStr = this.won ? 'Congratulations!' : "You didn't make it!"
+        const titleColor = this.won ? '#ffd700' : '#ff4444'
+        const subtitleStr = this.won ? 'Choose your reward!' : 'Try again on the app!'
+
+        const title = this.add.text(cx, titleY, titleStr, {
             fontSize: '36px',
-            color: '#ffd700',
+            color: titleColor,
             fontStyle: 'bold',
             stroke: '#000000',
             strokeThickness: 4,
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
-        const subtitle = this.add.text(cx, titleY + 40, 'Choose your reward!', {
+        const subtitle = this.add.text(cx, titleY + 40, subtitleStr, {
             fontSize: '18px',
             color: '#ffffff',
             stroke: '#000000',
@@ -176,23 +184,32 @@ export class EndScene extends Phaser.Scene {
         const btnH = 52
         const btnR = 12
 
-        // Orange/yellow gradient button — drawn centered at (0,0) inside container
+        // Button — drawn centered at (0,0) inside container
         const btnBg = this.add.graphics()
-        // Bottom (darker orange)
-        btnBg.fillStyle(0xe68a00, 1)
-        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + 3, btnW, btnH - 3, btnR)
-        // Top (bright yellow-orange)
-        btnBg.fillStyle(0xffbb00, 1)
-        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - 6, btnR)
-        // Border
-        btnBg.lineStyle(2, 0xcc7700, 1)
-        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
+        if (this.won) {
+            // Orange/yellow for win
+            btnBg.fillStyle(0xe68a00, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + 3, btnW, btnH - 3, btnR)
+            btnBg.fillStyle(0xffbb00, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - 6, btnR)
+            btnBg.lineStyle(2, 0xcc7700, 1)
+            btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
+        } else {
+            // Red for lose
+            btnBg.fillStyle(0x991111, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + 3, btnW, btnH - 3, btnR)
+            btnBg.fillStyle(0xcc2222, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - 6, btnR)
+            btnBg.lineStyle(2, 0x880000, 1)
+            btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
+        }
 
+        const btnStroke = this.won ? '#663300' : '#440000'
         const btnLabel = this.add.text(0, -2, 'INSTALL AND EARN', {
             fontSize: '22px',
             color: '#ffffff',
             fontStyle: 'bold',
-            stroke: '#663300',
+            stroke: btnStroke,
             strokeThickness: 3,
         }).setOrigin(0.5)
 

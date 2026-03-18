@@ -277,17 +277,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ── Finish handling ────────────────────────────────────────────────────────
+    private gameOver = false
+
     private handleFinish(): void {
-        if (this.player.isDead) return
+        if (this.gameOver || this.player.isDead) return
+        this.gameOver = true
         this.player.halt()
         this.finishLine.snap(() => {
-            this.scene.launch('EndScene', { coins: this.coinCount })
+            this.scene.launch('EndScene', { coins: this.coinCount, won: true })
         })
     }
 
     // ── Hit handling ───────────────────────────────────────────────────────────
     private handleDeath(): void {
-        if (this.player.isInvincible) return
+        if (this.gameOver || this.player.isInvincible) return
         this.lives--
 
         // remove a heart with a shrink + fade tween
@@ -304,9 +307,10 @@ export class GameScene extends Phaser.Scene {
         }
 
         if (this.lives <= 0) {
+            this.gameOver = true
             this.player.die()
             this.time.delayedCall(RESTART_DELAY, () => {
-                this.scene.launch('EndScene', { coins: this.coinCount })
+                this.scene.launch('EndScene', { coins: this.coinCount, won: false })
             })
         } else {
             this.player.takeHit()
