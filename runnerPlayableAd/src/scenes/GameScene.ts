@@ -29,6 +29,7 @@ export class GameScene extends Phaser.Scene {
     private hudIconBaseScaleX = 1
     private hudIconBaseScaleY = 1
     private started = false
+    private shownJumpHint = false
 
     constructor() {
         super({ key: 'GameScene' })
@@ -237,6 +238,62 @@ export class GameScene extends Phaser.Scene {
         this.bg.update(this.cameras.main.scrollX)
         this.finishLine.update(dt)
         this.enemies.getChildren().forEach(e => (e as Enemy).update())
+
+        // Pause and show jump hint when approaching first obstacle (x=850)
+        if (this.started && !this.shownJumpHint && this.player.x >= 750) {
+            this.shownJumpHint = true
+            this.showJumpHint()
+        }
+    }
+
+    // ── Jump hint ─────────────────────────────────────────────────────────────
+    private showJumpHint(): void {
+        this.physics.pause()
+        this.player.anims.pause()
+        const { width, height } = this.scale
+
+        const hintText = this.add.text(width / 2, height * 0.38, 'Jump to avoid enemies!', {
+            fontSize: '28px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 4,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
+
+        const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
+            .setScrollFactor(0).setDepth(150)
+        const handSrc = hand.texture.getSourceImage()
+        const handRatio = handSrc.width / handSrc.height
+        hand.setDisplaySize(60 * handRatio, 60)
+
+        this.tweens.add({
+            targets: hand,
+            y: height * 0.52 + 10,
+            duration: 600,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        })
+
+        this.tweens.add({
+            targets: hintText,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        })
+
+        const resume = () => {
+            this.physics.resume()
+            this.player.anims.resume()
+            this.tweens.killTweensOf([hintText, hand])
+            hintText.destroy()
+            hand.destroy()
+        }
+        this.input.once('pointerdown', resume)
+        this.input.keyboard!.once('keydown-SPACE', resume)
     }
 
     // ── Coin fly-to-icon animation ─────────────────────────────────────────────
