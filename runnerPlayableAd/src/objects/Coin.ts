@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { S } from '../config/gameConfig'
 
 const DISPLAY_SIZE = Math.round(70 * S)
+const PAYPAL_DISPLAY_SIZE = Math.round(50 * S)
 const COIN_KEYS = ['dollar1', 'paypal1']
 
 export class Coin extends Phaser.Physics.Arcade.Image {
@@ -11,23 +12,24 @@ export class Coin extends Phaser.Physics.Arcade.Image {
     scene.add.existing(this)
     scene.physics.add.existing(this, true)
 
-    // Fit into DISPLAY_SIZE box while keeping aspect ratio
+    // Fit into size box while keeping aspect ratio
+    const size = key === 'paypal1' ? PAYPAL_DISPLAY_SIZE : DISPLAY_SIZE
     const src = this.texture.getSourceImage()
     const ratio = src.width / src.height
     if (ratio >= 1) {
-      this.setDisplaySize(DISPLAY_SIZE, DISPLAY_SIZE / ratio)
+      this.setDisplaySize(size, size / ratio)
     } else {
-      this.setDisplaySize(DISPLAY_SIZE * ratio, DISPLAY_SIZE)
+      this.setDisplaySize(size * ratio, size)
     }
     this.setDepth(10)
 
-    // Set explicit body size to match displayed size
+    // Correct the static body offset so it's centered on (x, y).
+    // updateFromGameObject uses unscaled displayOrigin for position but
+    // display-pixel dimensions for size, which misaligns scaled sprites.
     const body = this.body as Phaser.Physics.Arcade.StaticBody
-    body.setSize(this.displayWidth, this.displayHeight)
-    body.setOffset(
-      (src.width - this.displayWidth / this.scaleX) / 2,
-      (src.height - this.displayHeight / this.scaleY) / 2,
-    )
+    const offsetX = this.displayOriginX - this.displayWidth / 2
+    const offsetY = this.displayOriginY - this.displayHeight / 2
+    body.setOffset(offsetX, offsetY)
     body.updateFromGameObject()
   }
 

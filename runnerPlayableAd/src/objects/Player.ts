@@ -16,7 +16,7 @@ const ANIMS = {
 
 // Hitbox — frame-local pixels (Phaser multiplies by sprite scale automatically).
 const BODY_W = 50
-const BODY_H = 80
+const BODY_H = 180
 
 const HIT_SLOWDOWN = 0.4       // speed multiplier during hit stagger
 const HIT_SLOW_DURATION = 400  // ms at reduced speed
