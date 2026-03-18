@@ -60,7 +60,7 @@ export class EnvDecor {
   constructor(scene: Phaser.Scene) {
     for (const item of ITEMS) {
       scene.add
-        .image(item.x, GROUND_Y - 50, item.key)
+        .image(item.x, GROUND_Y - 20, item.key)
         .setOrigin(0.5, 1.0)
         .setScale(item.scale)
         .setDepth(3)
