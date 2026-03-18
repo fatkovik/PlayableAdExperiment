@@ -17,6 +17,7 @@ import paypal1Url from './assets/Level/Gatherable/Paypal1.webp?url'
 
 // Obstacles
 import obstacle1Url from './assets/Level/Obstacles/Obstacle1.webp?url'
+import obstacleOutlineUrl from './assets/Level/Obstacles/obstackeOutline.webp?url'
 
 // UI
 import heartUrl from './assets/UI/red-heart.png?url'
@@ -39,6 +40,7 @@ export {
     dollar1Url,
     paypal1Url,
     obstacle1Url,
+    obstacleOutlineUrl,
     heartUrl,
     uiBannerLandscapeUrl,
     uiPaypalHeader,

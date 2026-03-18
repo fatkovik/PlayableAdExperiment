@@ -9,7 +9,6 @@ import { EnvDecor } from '../objects/EnvDecor'
 import { WORLD_WIDTH, WORLD_HEIGHT, GAMEPLAY_Y, GROUND_HEIGHT, STORE_URL, S } from '../config/gameConfig'
 import { LEVEL_DATA } from '../config/levelData'
 
-const RESTART_DELAY = 1200   // ms after death before scene restarts
 const MAX_LIVES = 3
 const HEART_SIZE = Math.round(32 * S)
 const HEART_GAP = Math.round(8 * S)
@@ -88,8 +87,8 @@ export class GameScene extends Phaser.Scene {
 
         this.physics.add.collider(this.enemies, ground)
 
-        // Obstacle → die
-        this.physics.add.collider(this.player, obstacles, () => {
+        // Obstacle → damage (overlap so player passes through)
+        this.physics.add.overlap(this.player, obstacles, () => {
             this.handleDeath()
         })
 
@@ -421,6 +420,73 @@ export class GameScene extends Phaser.Scene {
         })
     }
 
+    // ── Fail icon ─────────────────────────────────────────────────────────────
+    private showFailIcon(onComplete: () => void): void {
+        const { width, height } = this.scale
+
+        // Semi-transparent overlay (same as EndScene)
+        const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0.75)
+            .setScrollFactor(0)
+            .setDepth(199)
+            .setAlpha(0)
+
+        // Rotating pulse background (same as EndScene)
+        const pulse = this.add.image(width / 2, height / 2, 'uiBackgroundPulse')
+            .setScrollFactor(0)
+            .setDepth(199.5)
+            .setAlpha(0)
+        const pulseScale = Math.max(width, height) / Math.min(pulse.width, pulse.height) * 1.5
+        pulse.setScale(pulseScale)
+        this.tweens.add({
+            targets: pulse,
+            rotation: Math.PI * 2,
+            duration: 20000,
+            repeat: -1,
+            ease: 'Linear',
+        })
+
+        const icon = this.add.image(width / 2, height * 0.4, 'uiFailIcon')
+            .setScrollFactor(0)
+            .setDepth(200)
+            .setScale(0)
+            .setAlpha(0)
+
+        // Fade in overlay + pulse, then scale up icon
+        this.tweens.add({
+            targets: [overlay, pulse],
+            alpha: { getStart: () => 0, getEnd: (_t: any, _k: any, _v: any, i: number) => i === 0 ? 0.75 : 0.3 },
+            duration: 300,
+            ease: 'Sine.easeOut',
+        })
+
+        // Scale up from 0 → 1 with a bounce
+        this.tweens.add({
+            targets: icon,
+            scaleX: 1,
+            scaleY: 1,
+            alpha: 1,
+            duration: 500,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                // Hold for a moment, then fade and launch end scene
+                this.time.delayedCall(800, () => {
+                    this.tweens.add({
+                        targets: [icon, overlay, pulse],
+                        alpha: 0,
+                        duration: 300,
+                        ease: 'Sine.easeIn',
+                        onComplete: () => {
+                            icon.destroy()
+                            overlay.destroy()
+                            pulse.destroy()
+                            onComplete()
+                        },
+                    })
+                })
+            },
+        })
+    }
+
     // ── Hit handling ───────────────────────────────────────────────────────────
     private handleDeath(): void {
         if (this.gameOver || this.player.isInvincible) return
@@ -443,7 +509,7 @@ export class GameScene extends Phaser.Scene {
             this.gameOver = true
             this.bannerContainer.destroy()
             this.player.die()
-            this.time.delayedCall(RESTART_DELAY, () => {
+            this.showFailIcon(() => {
                 this.scene.launch('EndScene', { coins: this.coinCount, won: false })
             })
         } else {

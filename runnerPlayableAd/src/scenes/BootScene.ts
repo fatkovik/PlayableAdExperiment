@@ -12,6 +12,7 @@ import {
     dollar1Url,
     paypal1Url,
     obstacle1Url,
+    obstacleOutlineUrl,
     heartUrl,
     uiBannerLandscapeUrl,
     uiPaypalHeader,
@@ -57,6 +58,7 @@ export class BootScene extends Phaser.Scene {
 
         // Obstacles
         this.load.image('obstacle1', obstacle1Url)
+        this.load.image('obstacleOutline', obstacleOutlineUrl)
 
         // UI
         this.load.image('heart', heartUrl)
