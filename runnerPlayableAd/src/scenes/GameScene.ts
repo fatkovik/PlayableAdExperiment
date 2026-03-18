@@ -240,33 +240,27 @@ export class GameScene extends Phaser.Scene {
         const bannerY = height - bannerH / 2
 
         // Background bar
-        const bg = this.add.rectangle(width / 2, bannerY, width, bannerH, 0x002b7a, 0.92)
+        const bg = this.add.image(width / 2, bannerY, 'uiBannerLandscape')
             .setScrollFactor(0).setDepth(200)
-
-        // PayPal icon (using loaded paypal1 texture as placeholder)
-        const icon = this.add.image(50, bannerY, 'paypal1')
-            .setScrollFactor(0).setDepth(201)
-        const iconSrc = icon.texture.getSourceImage()
-        const iconRatio = iconSrc.width / iconSrc.height
-        const iconH = 44
-        icon.setDisplaySize(iconH * iconRatio, iconH)
+            .setDisplaySize(width, bannerH)
 
         // "Download Now" button
         const btnW = 160
         const btnH = 40
         const btnX = width - 100
+        const btnY = bannerY + 10
         const btnBg = this.add.graphics().setScrollFactor(0).setDepth(201)
         btnBg.fillStyle(0x00cc55, 1)
-        btnBg.fillRoundedRect(btnX - btnW / 2, bannerY - btnH / 2, btnW, btnH, 10)
+        btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
         btnBg.lineStyle(2, 0xffffff, 0.5)
-        btnBg.strokeRoundedRect(btnX - btnW / 2, bannerY - btnH / 2, btnW, btnH, 10)
+        btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
 
-        this.add.text(btnX, bannerY, 'Download Now', {
+        this.add.text(btnX, btnY, 'Download Now', {
             fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(202)
 
         // Hit zone
-        const hitZone = this.add.zone(btnX, bannerY, btnW, btnH)
+        const hitZone = this.add.zone(btnX, btnY, btnW, btnH)
             .setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(203)
         hitZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
             p.event.stopPropagation()

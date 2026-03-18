@@ -13,6 +13,7 @@ import {
   paypal1Url,
   obstacle1Url,
   heartUrl,
+  uiBannerLandscapeUrl,
 } from '../assets'
 
 // Player:  848×1233, 4 cols × 4 rows → 212×308 px per frame
@@ -55,6 +56,7 @@ export class BootScene extends Phaser.Scene {
 
     // UI
     this.load.image('heart', heartUrl)
+    this.load.image('uiBannerLandscape', uiBannerLandscapeUrl)
   }
 
   create(): void {
