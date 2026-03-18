@@ -21,8 +21,11 @@ export class EndScene extends Phaser.Scene {
     const { width, height } = this.scale
     const cx = width / 2
 
-    // ── Dark overlay background ──────────────────────────────────────────────
-    this.cameras.main.setBackgroundColor('#1a1a2e')
+    // ── Semi-transparent overlay — game scene visible underneath ─────────────
+    this.cameras.main.setBackgroundColor('rgba(0,0,0,0)')
+    this.add.rectangle(cx, height / 2, width, height, 0x1a1a2e, 0.7)
+      .setScrollFactor(0)
+      .setDepth(0)
 
     // ── Confetti particles ───────────────────────────────────────────────────
     this.createConfetti(width, height)

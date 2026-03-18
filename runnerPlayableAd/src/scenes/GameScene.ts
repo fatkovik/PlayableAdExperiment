@@ -130,7 +130,7 @@ export class GameScene extends Phaser.Scene {
     if (this.player.isDead) return
     this.player.halt()
     this.finishLine.snap(() => {
-      this.scene.start('EndScene', { coins: this.coinCount })
+      this.scene.launch('EndScene', { coins: this.coinCount })
     })
   }
 
@@ -155,7 +155,7 @@ export class GameScene extends Phaser.Scene {
     if (this.lives <= 0) {
       this.player.die()
       this.time.delayedCall(RESTART_DELAY, () => {
-        this.scene.start('EndScene', { coins: this.coinCount })
+        this.scene.launch('EndScene', { coins: this.coinCount })
       })
     } else {
       this.player.takeHit()
