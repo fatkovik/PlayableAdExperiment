@@ -1,27 +1,27 @@
 import Phaser from 'phaser'
-import { WORLD_WIDTH, GROUND_Y } from '../config/gameConfig'
+import { WORLD_WIDTH, GROUND_Y, GAMEPLAY_Y, S } from '../config/gameConfig'
 
-const FINISH_X = WORLD_WIDTH - 200
-const POLE_WIDTH = 10
-const POLE_HEIGHT = 90               // shorter poles — rope is at player level
-const TAPE_WIDTH = 260                // wider span between poles
-const TAPE_THICKNESS = 10             // thinner ribbon for rope look
-const NUM_POINTS = 32                 // more vertices for smoother longer rope
-const SWAY_AMP = 3                    // gentle idle sway in px
-const SWAY_SPEED = 1.2                // cycles / sec
-const SAG_AMOUNT = 22                 // more sag for longer rope
-const ROPE_Y = GROUND_Y - 50         // chest-height of the player
-const ROPE_LOW_OFFSET = 135                 // right pole sits this many px lower than left
+const FINISH_X = WORLD_WIDTH - Math.round(200 * S)
+const POLE_WIDTH = Math.round(10 * S)
+const POLE_HEIGHT = Math.round(90 * S)
+const TAPE_WIDTH = Math.round(260 * S)
+const TAPE_THICKNESS = Math.round(10 * S)
+const NUM_POINTS = 32
+const SWAY_AMP = 3 * S
+const SWAY_SPEED = 1.2
+const SAG_AMOUNT = 22 * S
+const ROPE_Y = GROUND_Y - Math.round(50 * S)
+const ROPE_LOW_OFFSET = Math.round(135 * S)
 
 // Confetti
 const CONFETTI_COLORS = [0xff0000, 0x00cc00, 0x0066ff, 0xffdd00, 0xff66cc, 0x00ddff, 0xff8800]
 const CONFETTI_COUNT = 500
 
 // Cut animation
-const CUT_GRAVITY = 600               // px/s² gravity on cut halves
-const CUT_SWING_SPEED = 8             // radial swing speed
-const CUT_SWING_DECAY = 3             // how fast swing dampens
-const CUT_INITIAL_FLING = -120        // initial upward fling on cut ends
+const CUT_GRAVITY = 600 * S
+const CUT_SWING_SPEED = 8
+const CUT_SWING_DECAY = 3
+const CUT_INITIAL_FLING = -120 * S
 
 export class FinishLine {
     private scene: Phaser.Scene
@@ -66,14 +66,10 @@ export class FinishLine {
         const points = this.rope.points as Phaser.Math.Vector2[]
         for (let i = 0; i < points.length; i++) {
             const norm = i / (points.length - 1)
-            // Slope: right pole sits lower
             const slope = norm * ROPE_LOW_OFFSET
-            // Catenary / parabolic sag — peaks in the middle
             const sag = SAG_AMOUNT * 4 * norm * (1 - norm)
-            // Gentle wave sway
             const sway = Math.sin(this.elapsed * SWAY_SPEED * Math.PI * 2 + norm * Math.PI) * SWAY_AMP
-            // Additional subtle bounce that travels along the rope
-            const bounce = Math.sin(this.elapsed * 3.5 + norm * Math.PI * 2) * 1.2
+            const bounce = Math.sin(this.elapsed * 3.5 + norm * Math.PI * 2) * 1.2 * S
             points[i].y = slope + sag + sway + bounce
         }
 
@@ -84,13 +80,11 @@ export class FinishLine {
         if (this.finished) return
         this.finished = true
 
-        // Create two rope halves, then hide the original
         this.createCutHalves()
         this.rope.setVisible(false)
         this.isCut = true
         this.cutTime = 0
 
-        // Launch confetti from both poles
         this.launchConfetti()
 
         this.scene.time.delayedCall(1000, onComplete)
@@ -102,7 +96,6 @@ export class FinishLine {
         const midIdx = Math.floor(NUM_POINTS / 2)
         const srcPoints = this.rope.points as Phaser.Math.Vector2[]
 
-        // Left half — indices 0..midIdx, same x/y as original rope
         const leftPts: Phaser.Math.Vector2[] = []
         this.leftBaseY = []
         for (let i = 0; i <= midIdx; i++) {
@@ -112,7 +105,6 @@ export class FinishLine {
         this.leftHalf = this.scene.add.rope(FINISH_X, ROPE_Y, 'finishTape', undefined, leftPts)
         this.leftHalf.setDepth(9)
 
-        // Right half — indices midIdx..end, same x/y as original rope
         const rightPts: Phaser.Math.Vector2[] = []
         this.rightBaseY = []
         for (let i = midIdx; i < NUM_POINTS; i++) {
@@ -127,47 +119,45 @@ export class FinishLine {
         this.cutTime += dt
         const t = this.cutTime
 
-        // Left half — pivot at index 0 (left pole), free end (last index) swings down
         const leftPts = this.leftHalf.points as Phaser.Math.Vector2[]
         for (let i = 0; i < leftPts.length; i++) {
-            const norm = i / (leftPts.length - 1)   // 0 at pole, 1 at cut end
+            const norm = i / (leftPts.length - 1)
             const swing = Math.sin(t * CUT_SWING_SPEED) * Math.exp(-t * CUT_SWING_DECAY)
             const gravity = 0.5 * CUT_GRAVITY * t * t * norm
             const fling = CUT_INITIAL_FLING * t * norm * Math.exp(-t * 3)
-            leftPts[i].y = this.leftBaseY[i] + norm * (gravity + fling + swing * 30)
+            leftPts[i].y = this.leftBaseY[i] + norm * (gravity + fling + swing * 30 * S)
         }
         this.leftHalf.setDirty()
 
-        // Right half — pivot at last index (right pole), free end (index 0) swings down
         const rightPts = this.rightHalf.points as Phaser.Math.Vector2[]
         const lastIdx = rightPts.length - 1
         for (let i = 0; i < rightPts.length; i++) {
-            const norm = 1 - i / lastIdx   // 1 at cut end (i=0), 0 at pole (i=last)
+            const norm = 1 - i / lastIdx
             const swing = Math.sin(t * CUT_SWING_SPEED + 0.5) * Math.exp(-t * CUT_SWING_DECAY)
             const gravity = 0.5 * CUT_GRAVITY * t * t * norm
             const fling = CUT_INITIAL_FLING * t * norm * Math.exp(-t * 3)
-            rightPts[i].y = this.rightBaseY[i] + norm * (gravity + fling + swing * 30)
+            rightPts[i].y = this.rightBaseY[i] + norm * (gravity + fling + swing * 30 * S)
         }
         this.rightHalf.setDirty()
 
-        // Clamp — stop once the free ends have fallen past the ground
-        const maxDrop = GROUND_Y - ROPE_Y + 40
+        const maxDrop = GROUND_Y - ROPE_Y + 40 * S
         if (0.5 * CUT_GRAVITY * t * t > maxDrop) {
-            this.isCut = false   // stop updating, freeze in place
+            this.isCut = false
         }
     }
 
     /* ── Confetti ───────────────────────────────────────────────────────── */
 
     private createConfettiTextures(): void {
-        // Create small rectangular confetti pieces in different colors
+        const sz = Math.max(Math.round(8 * S), 4)
+        const szH = Math.max(Math.round(6 * S), 3)
         for (let i = 0; i < CONFETTI_COLORS.length; i++) {
             const key = `confetti_${i}`
             if (this.scene.textures.exists(key)) continue
             const gfx = this.scene.add.graphics()
             gfx.fillStyle(CONFETTI_COLORS[i], 1)
-            gfx.fillRect(0, 0, 8, 6)
-            gfx.generateTexture(key, 8, 6)
+            gfx.fillRect(0, 0, sz, szH)
+            gfx.generateTexture(key, sz, szH)
             gfx.destroy()
         }
     }
@@ -180,7 +170,6 @@ export class FinishLine {
         const leftY = GROUND_Y - POLE_HEIGHT
         const rightY = GROUND_Y - POLE_HEIGHT + ROPE_LOW_OFFSET
 
-        // Emit from both poles
         this.emitConfettiAt(leftX, leftY)
         this.emitConfettiAt(rightX, rightY)
     }
@@ -193,25 +182,21 @@ export class FinishLine {
                 .setRotation(Math.random() * Math.PI * 2)
                 .setScale(Phaser.Math.FloatBetween(0.6, 1.4))
 
-            // Fountain / firework style: shoot upward with slight horizontal spread
-            const spreadX = Phaser.Math.FloatBetween(-60, 60)
-            const launchVY = Phaser.Math.FloatBetween(-350, -550) // strong upward burst
-            const peakTime = 0.45 // seconds to reach apex
-            const gravity = 600
+            const spreadX = Phaser.Math.FloatBetween(-60 * S, 60 * S)
+            const launchVY = Phaser.Math.FloatBetween(-350 * S, -550 * S)
+            const peakTime = 0.45
+            const gravity = 600 * S
 
-            // Peak position
             const peakX = x + spreadX
             const peakY = y + launchVY * peakTime + 0.5 * gravity * peakTime * peakTime
 
-            // After peak, pieces fan out and drift down
-            const driftX = Phaser.Math.FloatBetween(-80, 80)
+            const driftX = Phaser.Math.FloatBetween(-80 * S, 80 * S)
             const fallTime = Phaser.Math.FloatBetween(0.6, 1.0)
             const endX = peakX + driftX
             const endY = peakY + 0.5 * gravity * fallTime * fallTime
 
             const delay = Phaser.Math.Between(0, 1000)
 
-            // Phase 1: shoot up to peak (fast, compact)
             this.scene.tweens.add({
                 targets: piece,
                 x: peakX,
@@ -221,7 +206,6 @@ export class FinishLine {
                 ease: 'Cubic.easeOut',
                 delay,
                 onComplete: () => {
-                    // Phase 2: drift down from peak (slower, spread out, fade)
                     this.scene.tweens.add({
                         targets: piece,
                         x: endX,
@@ -243,8 +227,8 @@ export class FinishLine {
 
     private createTapeTexture(): void {
         const gfx = this.scene.add.graphics()
-        const stripeW = 14
-        const numStripes = Math.ceil((TAPE_WIDTH + 40) / stripeW)
+        const stripeW = Math.round(14 * S)
+        const numStripes = Math.ceil((TAPE_WIDTH + 40 * S) / stripeW)
         for (let i = 0; i < numStripes; i++) {
             gfx.fillStyle(i % 2 === 0 ? 0xff0000 : 0xffffff, 1)
             gfx.fillRect(i * stripeW, 0, stripeW, TAPE_THICKNESS)
@@ -260,17 +244,16 @@ export class FinishLine {
         gfx.fillStyle(0xcccccc, 1)
         gfx.fillRect(0, 0, POLE_WIDTH, POLE_HEIGHT)
         gfx.fillStyle(0x999999, 1)
-        gfx.fillRect(0, 0, 3, POLE_HEIGHT)
+        gfx.fillRect(0, 0, Math.round(3 * S), POLE_HEIGHT)
         gfx.fillStyle(0xffd700, 1)
-        gfx.fillRoundedRect(-2, -6, POLE_WIDTH + 4, 10, 3)
-        gfx.generateTexture('finishPole', POLE_WIDTH + 4, POLE_HEIGHT + 6)
+        gfx.fillRoundedRect(-Math.round(2 * S), -Math.round(6 * S), POLE_WIDTH + Math.round(4 * S), Math.round(10 * S), Math.round(3 * S))
+        gfx.generateTexture('finishPole', POLE_WIDTH + Math.round(4 * S), POLE_HEIGHT + Math.round(6 * S))
         gfx.destroy()
 
         const leftPoleTop = GROUND_Y - POLE_HEIGHT
         this.leftPole = this.scene.add.image(FINISH_X - halfSpan, leftPoleTop, 'finishPole')
         this.leftPole.setOrigin(0.5, 0).setDepth(8)
 
-        // Same height pole, just positioned lower on screen
         const rightPoleTop = GROUND_Y - POLE_HEIGHT + ROPE_LOW_OFFSET
         this.rightPole = this.scene.add.image(FINISH_X + halfSpan, rightPoleTop, 'finishPole')
         this.rightPole.setOrigin(0.5, 0).setDepth(8)
@@ -295,8 +278,8 @@ export class FinishLine {
     }
 
     private createTriggerZone(): void {
-        this.triggerZone = this.scene.physics.add.sprite(FINISH_X, ROPE_Y, '__DEFAULT')
-        this.triggerZone.setDisplaySize(30, POLE_HEIGHT)
+        this.triggerZone = this.scene.physics.add.sprite(FINISH_X, GAMEPLAY_Y - POLE_HEIGHT / 2, '__DEFAULT')
+        this.triggerZone.setDisplaySize(Math.round(30 * S), GAMEPLAY_Y - ROPE_Y + POLE_HEIGHT)
         this.triggerZone.setAlpha(0)
         const body = this.triggerZone.body as Phaser.Physics.Arcade.Body
         body.setAllowGravity(false)

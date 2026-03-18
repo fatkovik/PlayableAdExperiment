@@ -14,7 +14,7 @@ const ANIMS = {
     die: { start: 12, end: 15, frameRate: 8, repeat: 0 },
 } as const
 
-// Hitbox in world pixels (post-scale). Smaller than the displayed sprite.
+// Hitbox — frame-local pixels (Phaser multiplies by sprite scale automatically).
 const BODY_W = 50
 const BODY_H = 80
 
@@ -38,11 +38,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setOrigin(2, 0.5)        // (x, y) = feet / bottom-centre
         this.setCollideWorldBounds(true)
 
+        // Offset is in frame-local coords (Phaser multiplies by scale).
+        // Frame: 212×308 px.
         const body = this.body as Phaser.Physics.Arcade.Body
         body.setSize(BODY_W, BODY_H)
         body.setOffset(
-            (this.displayWidth - BODY_W) / 2,
-            this.displayHeight - BODY_H,   // feet-aligned
+            (212 - BODY_W) / 2,   // center horizontally in frame
+            308 - BODY_H,          // align to bottom of frame
         )
 
         this.play('run')

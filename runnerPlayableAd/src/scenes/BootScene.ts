@@ -76,11 +76,12 @@ export class BootScene extends Phaser.Scene {
         const { width, height } = this.scale
         const cx = width / 2
         const cy = height / 2
-        const barW = 400
-        const barH = 20
+        const s = Math.max(1, height / 600)
+        const barW = Math.round(400 * s)
+        const barH = Math.round(20 * s)
 
-        this.add.text(cx, cy - 40, 'Loading…', {
-            fontSize: '18px',
+        this.add.text(cx, cy - Math.round(40 * s), 'Loading…', {
+            fontSize: `${Math.round(18 * s)}px`,
             color: '#ffffff',
         }).setOrigin(0.5)
 

@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
+import { S } from '../config/gameConfig'
 
-const SCALE = 0.6   // 119×135 source → ~71×81 displayed
+const SCALE = 0.6 * S
 
 export class Obstacle extends Phaser.Physics.Arcade.Image {
   constructor(scene: Phaser.Scene, x: number, y: number) {

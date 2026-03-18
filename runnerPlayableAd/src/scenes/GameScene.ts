@@ -6,13 +6,13 @@ import { Coin } from '../objects/Coin'
 import { Enemy } from '../objects/Enemy'
 import { FinishLine } from '../objects/FinishLine'
 import { EnvDecor } from '../objects/EnvDecor'
-import { WORLD_WIDTH, WORLD_HEIGHT, GROUND_Y, GROUND_HEIGHT, STORE_URL } from '../config/gameConfig'
+import { WORLD_WIDTH, WORLD_HEIGHT, GAMEPLAY_Y, GROUND_HEIGHT, STORE_URL, S } from '../config/gameConfig'
 import { LEVEL_DATA } from '../config/levelData'
 
 const RESTART_DELAY = 1200   // ms after death before scene restarts
 const MAX_LIVES = 3
-const HEART_SIZE = 32        // display size of each heart icon
-const HEART_GAP = 8          // spacing between hearts
+const HEART_SIZE = Math.round(32 * S)
+const HEART_GAP = Math.round(8 * S)
 
 export class GameScene extends Phaser.Scene {
     private bg!: Background
@@ -46,7 +46,7 @@ export class GameScene extends Phaser.Scene {
         // ── Static ground ─────────────────────────────────────────────────────────
         const ground = this.physics.add.staticImage(
             WORLD_WIDTH / 2,
-            GROUND_Y + GROUND_HEIGHT / 2,
+            GAMEPLAY_Y + GROUND_HEIGHT / 2,
             '__DEFAULT',
         )
         ground.setDisplaySize(WORLD_WIDTH, GROUND_HEIGHT)
@@ -58,7 +58,7 @@ export class GameScene extends Phaser.Scene {
 
         // ── Player ────────────────────────────────────────────────────────────────
         Player.createAnims(this.anims)
-        this.player = new Player(this, 300, GROUND_Y)
+        this.player = new Player(this, Math.round(300 * S), GAMEPLAY_Y)
 
         // ── Obstacles & Coins from level data ─────────────────────────────────────
         const obstacles = this.physics.add.staticGroup()
@@ -75,7 +75,7 @@ export class GameScene extends Phaser.Scene {
         // ── Enemies ──────────────────────────────────────────────────────────────
         Enemy.createAnims(this.anims)
         this.enemies = this.physics.add.group()
-        const ENEMY_POSITIONS = [1100, 1750, 2400, 3200]
+        const ENEMY_POSITIONS = [850, 1350, 1900, 2550].map(x => Math.round(x * S))
         for (const ex of ENEMY_POSITIONS) {
             this.enemies.add(new Enemy(this, ex))
         }
@@ -115,7 +115,7 @@ export class GameScene extends Phaser.Scene {
         // ── Camera ────────────────────────────────────────────────────────────────
         this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
         this.cameras.main.startFollow(this.player, false, 1, 1)
-        this.cameras.main.setFollowOffset(100, 0)
+        this.cameras.main.setFollowOffset(Math.round(100 * S), 0)
 
         // ── Input ─────────────────────────────────────────────────────────────────
         this.input.keyboard!.on('keydown-SPACE', () => {
@@ -136,9 +136,9 @@ export class GameScene extends Phaser.Scene {
         const { width, height } = this.scale
 
         // Coin counter — top-right with PayPal icon underneath
-        const coinIconSize = 80
-        const coinIconX = width - 100
-        const coinIconY = 45
+        const coinIconSize = Math.round(80 * S)
+        const coinIconX = width - Math.round(100 * S)
+        const coinIconY = Math.round(45 * S)
         this.hudIconX = coinIconX
         this.hudIconY = coinIconY
         this.hudIcon = this.add.image(coinIconX, coinIconY, 'uiPaypalHeader')
@@ -149,13 +149,13 @@ export class GameScene extends Phaser.Scene {
         this.hudIconBaseScaleX = this.hudIcon.scaleX
         this.hudIconBaseScaleY = this.hudIcon.scaleY
 
-        const cointTextX = coinIconX + 20
+        const cointTextX = coinIconX + Math.round(20 * S)
         const coinTextY = coinIconY
 
         this.coinText = this.add
             .text(cointTextX, coinTextY, '$0', {
-                fontSize: '20px', color: '#1b49f2',
-                stroke: '#000000', strokeThickness: 2,
+                fontSize: `${Math.round(20 * S)}px`, color: '#1b49f2',
+                stroke: '#000000', strokeThickness: Math.round(2 * S),
             })
             .setOrigin(0.5)
             .setScrollFactor(0)
@@ -165,8 +165,8 @@ export class GameScene extends Phaser.Scene {
         this.hearts = []
         for (let i = 0; i < MAX_LIVES; i++) {
             const heart = this.add.image(
-                16 + HEART_SIZE / 2 + i * (HEART_SIZE + HEART_GAP),
-                24,
+                Math.round(16 * S) + HEART_SIZE / 2 + i * (HEART_SIZE + HEART_GAP),
+                Math.round(24 * S),
                 'heart',
             )
             heart.setDisplaySize(HEART_SIZE, HEART_SIZE)
@@ -180,29 +180,31 @@ export class GameScene extends Phaser.Scene {
 
         // ── Tap to start ────────────────────────────────────────────────────────
         this.started = false
-        this.player.setY(GROUND_Y)
+        // Player origin is (2, 0.5) — position y is the vertical center.
+        // Nudge slightly below GAMEPLAY_Y so feet sit on the visible road.
+        this.player.setY(GAMEPLAY_Y - this.player.displayHeight / 2)
         this.player.play('idle')
         this.physics.pause()
 
         const tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
-            fontSize: '28px',
+            fontSize: `${Math.round(28 * S)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 4,
+            strokeThickness: Math.round(4 * S),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
 
         const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
         const handSrc = hand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
-        const handH = 60
+        const handH = Math.round(60 * S)
         hand.setDisplaySize(handH * handRatio, handH)
 
         // Small bobbing animation on the hand
         this.tweens.add({
             targets: hand,
-            y: height * 0.52 + 10,
+            y: height * 0.52 + Math.round(10 * S),
             duration: 600,
             yoyo: true,
             repeat: -1,
@@ -240,8 +242,8 @@ export class GameScene extends Phaser.Scene {
         this.finishLine.update(dt)
         this.enemies.getChildren().forEach(e => (e as Enemy).update())
 
-        // Pause and show jump hint when approaching first obstacle (x=850)
-        if (this.started && !this.shownJumpHint && this.player.x >= 750) {
+        // Pause and show jump hint when approaching first obstacle
+        if (this.started && !this.shownJumpHint && this.player.x >= Math.round(600 * S)) {
             this.shownJumpHint = true
             this.showJumpHint()
         }
@@ -254,22 +256,22 @@ export class GameScene extends Phaser.Scene {
         const { width, height } = this.scale
 
         const hintText = this.add.text(width / 2, height * 0.38, 'Jump to avoid enemies!', {
-            fontSize: '28px',
+            fontSize: `${Math.round(28 * S)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 4,
+            strokeThickness: Math.round(4 * S),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
 
         const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
         const handSrc = hand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
-        hand.setDisplaySize(60 * handRatio, 60)
+        hand.setDisplaySize(Math.round(60 * S) * handRatio, Math.round(60 * S))
 
         this.tweens.add({
             targets: hand,
-            y: height * 0.52 + 10,
+            y: height * 0.52 + Math.round(10 * S),
             duration: 600,
             yoyo: true,
             repeat: -1,
@@ -299,16 +301,14 @@ export class GameScene extends Phaser.Scene {
 
     // ── Coin fly-to-icon animation ─────────────────────────────────────────────
     private flyCoinToIcon(worldX: number, worldY: number, textureKey: string): void {
-        // Convert world position to screen position
         const cam = this.cameras.main
         const screenX = worldX - cam.scrollX
         const screenY = worldY - cam.scrollY
 
-        // Create a small clone that flies to the HUD icon
         const clone = this.add.image(screenX, screenY, textureKey)
             .setScrollFactor(0)
             .setDepth(150)
-            .setDisplaySize(30, 30)
+            .setDisplaySize(Math.round(30 * S), Math.round(30 * S))
 
         this.tweens.add({
             targets: clone,
@@ -321,7 +321,6 @@ export class GameScene extends Phaser.Scene {
             ease: 'Cubic.easeIn',
             onComplete: () => {
                 clone.destroy()
-                // Bounce the HUD icon — reset to true base scales first, then animate
                 this.hudIcon.setScale(this.hudIconBaseScaleX, this.hudIconBaseScaleY)
                 this.coinText.setScale(1)
                 this.tweens.killTweensOf([this.hudIcon, this.coinText])
@@ -354,7 +353,7 @@ export class GameScene extends Phaser.Scene {
     // ── Bottom banner ─────────────────────────────────────────────────────────
     private createBottomBanner(): void {
         const { width, height } = this.scale
-        const bannerH = 70
+        const bannerH = Math.round(70 * S)
         const bannerY = height - bannerH / 2
 
         // Background bar
@@ -362,18 +361,18 @@ export class GameScene extends Phaser.Scene {
             .setScrollFactor(0).setDisplaySize(width, bannerH)
 
         // "Download Now" button — drawn centered at (0,0) inside a container
-        const btnW = 160
-        const btnH = 40
-        const btnX = width - 100
-        const btnY = bannerY + 10
+        const btnW = Math.round(160 * S)
+        const btnH = Math.round(40 * S)
+        const btnX = width - Math.round(100 * S)
+        const btnY = bannerY + Math.round(10 * S)
         const btnBg = this.add.graphics()
         btnBg.fillStyle(0x00cc55, 1)
-        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 10)
+        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, Math.round(10 * S))
         btnBg.lineStyle(2, 0xffffff, 0.5)
-        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 10)
+        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, Math.round(10 * S))
 
         const btnLabel = this.add.text(0, 0, 'Download Now', {
-            fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
+            fontSize: `${Math.round(18 * S)}px`, color: '#ffffff', fontStyle: 'bold',
         }).setOrigin(0.5)
 
         const btnContainer = this.add.container(btnX, btnY, [btnBg, btnLabel])

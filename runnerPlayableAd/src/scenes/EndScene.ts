@@ -1,9 +1,9 @@
 import Phaser from 'phaser'
-import { STORE_URL } from '../config/gameConfig'
+import { STORE_URL, S } from '../config/gameConfig'
 
 // Confetti colours
 const CONFETTI_COLORS = [0xff0000, 0x00cc44, 0x2288ff, 0xffdd00, 0xff66cc, 0xffffff]
-const CONFETTI_SIZE = 6
+const CONFETTI_SIZE = Math.round(6 * S)
 
 export class EndScene extends Phaser.Scene {
     private coinCount = 0
@@ -31,7 +31,6 @@ export class EndScene extends Phaser.Scene {
         // ── Rotating pulse background ──────────────────────────────────────────
         this.pulseImg = this.add.image(cx, height / 2, 'uiBackgroundPulse')
             .setDepth(1).setAlpha(0.3)
-        // Scale to cover the screen
         const pulseScale = Math.max(width, height) / Math.min(
             this.pulseImg.width, this.pulseImg.height
         ) * 1.5
@@ -57,24 +56,24 @@ export class EndScene extends Phaser.Scene {
         const subtitleStr = this.won ? 'Choose your reward!' : 'Try again on the app!'
 
         const title = this.add.text(cx, titleY, titleStr, {
-            fontSize: '36px',
+            fontSize: `${Math.round(36 * S)}px`,
             color: titleColor,
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 4,
+            strokeThickness: Math.round(4 * S),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
-        const subtitle = this.add.text(cx, titleY + 40, subtitleStr, {
-            fontSize: '18px',
+        const subtitle = this.add.text(cx, titleY + Math.round(40 * S), subtitleStr, {
+            fontSize: `${Math.round(18 * S)}px`,
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2,
+            strokeThickness: Math.round(2 * S),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
         this.tweens.add({
             targets: [title, subtitle],
             alpha: 1,
-            y: '-=10',
+            y: `-=${Math.round(10 * S)}`,
             duration: 500,
             ease: 'Back.easeOut',
         })
@@ -83,7 +82,7 @@ export class EndScene extends Phaser.Scene {
         const cardW = width * 0.3
         const cardH = height * 0.28
         const cardY = height * 0.42
-        const cardR = 16
+        const cardR = Math.round(16 * S)
 
         const card = this.add.graphics().setDepth(10)
         card.fillStyle(0xffffff, 1)
@@ -91,7 +90,7 @@ export class EndScene extends Phaser.Scene {
         // Subtle shadow
         const shadow = this.add.graphics().setDepth(9)
         shadow.fillStyle(0x000000, 0.2)
-        shadow.fillRoundedRect(cx - cardW / 2 + 4, cardY - cardH / 2 + 4, cardW, cardH, cardR)
+        shadow.fillRoundedRect(cx - cardW / 2 + Math.round(4 * S), cardY - cardH / 2 + Math.round(4 * S), cardW, cardH, cardR)
 
         // Scale-in the card
         const cardContainer = this.add.container(0, 0, [shadow, card]).setDepth(10)
@@ -116,7 +115,7 @@ export class EndScene extends Phaser.Scene {
 
         // Money amount with count-up
         const moneyText = this.add.text(cx, cardY + cardH * 0.22, '$0.00', {
-            fontSize: '32px',
+            fontSize: `${Math.round(32 * S)}px`,
             color: '#222222',
             fontStyle: 'bold',
         }).setOrigin(0.5).setDepth(11).setAlpha(0)
@@ -144,18 +143,18 @@ export class EndScene extends Phaser.Scene {
         })
 
         // ── Countdown timer area ───────────────────────────────────────────────
-        const timerY = cardY + cardH / 2 + 40
-        let seconds = 41
+        const timerY = cardY + cardH / 2 + Math.round(40 * S)
+        let seconds = 60
         const timerText = this.add.text(cx, timerY, '00:41', {
-            fontSize: '28px',
+            fontSize: `${Math.round(28 * S)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 3,
+            strokeThickness: Math.round(3 * S),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
-        const timerSub = this.add.text(cx, timerY + 28, 'Next payment in one minute', {
-            fontSize: '13px',
+        const timerSub = this.add.text(cx, timerY + Math.round(28 * S), 'Next payment in one minute', {
+            fontSize: `${Math.round(13 * S)}px`,
             color: '#cccccc',
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
@@ -179,44 +178,42 @@ export class EndScene extends Phaser.Scene {
         })
 
         // ── "INSTALL AND EARN" button ──────────────────────────────────────────
-        const btnY = height - 60
-        const btnW = width * 0.65
-        const btnH = 52
-        const btnR = 12
+        const btnY = height - Math.round(60 * S)
+        const btnW = width * 0.55
+        const btnH = Math.round(52 * S)
+        const btnR = Math.round(12 * S)
 
         // Button — drawn centered at (0,0) inside container
         const btnBg = this.add.graphics()
         if (this.won) {
-            // Orange/yellow for win
             btnBg.fillStyle(0xe68a00, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + 3, btnW, btnH - 3, btnR)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * S), btnW, btnH - Math.round(3 * S), btnR)
             btnBg.fillStyle(0xffbb00, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - 6, btnR)
-            btnBg.lineStyle(2, 0xcc7700, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * S), btnR)
+            btnBg.lineStyle(Math.round(2 * S), 0xcc7700, 1)
             btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
         } else {
-            // Red for lose
             btnBg.fillStyle(0x991111, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + 3, btnW, btnH - 3, btnR)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * S), btnW, btnH - Math.round(3 * S), btnR)
             btnBg.fillStyle(0xcc2222, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - 6, btnR)
-            btnBg.lineStyle(2, 0x880000, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * S), btnR)
+            btnBg.lineStyle(Math.round(2 * S), 0x880000, 1)
             btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
         }
 
         const btnStroke = this.won ? '#663300' : '#440000'
-        const btnLabel = this.add.text(0, -2, 'INSTALL AND EARN', {
-            fontSize: '22px',
+        const btnLabel = this.add.text(0, -Math.round(2 * S), 'INSTALL AND EARN', {
+            fontSize: `${Math.round(22 * S)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: btnStroke,
-            strokeThickness: 3,
+            strokeThickness: Math.round(3 * S),
         }).setOrigin(0.5)
 
         const btnContainer = this.add.container(cx, btnY, [btnBg, btnLabel]).setDepth(20)
 
         // Slide up from below
-        btnContainer.y = btnY + 80
+        btnContainer.y = btnY + Math.round(80 * S)
         btnContainer.setAlpha(0)
         this.tweens.add({
             targets: btnContainer,
@@ -226,7 +223,6 @@ export class EndScene extends Phaser.Scene {
             delay: 1000,
             ease: 'Back.easeOut',
             onComplete: () => {
-                // Gentle pulse — scales from center
                 this.tweens.add({
                     targets: btnContainer,
                     scaleX: 1.03,
@@ -264,10 +260,10 @@ export class EndScene extends Phaser.Scene {
         })
 
         CONFETTI_COLORS.forEach((_color, i) => {
-            this.add.particles(w / 2, -10, `confetti${i}`, {
+            this.add.particles(w / 2, -Math.round(10 * S), `confetti${i}`, {
                 x: { min: -w / 2, max: w / 2 },
-                speedY: { min: 60, max: 200 },
-                speedX: { min: -80, max: 80 },
+                speedY: { min: 60 * S, max: 200 * S },
+                speedX: { min: -80 * S, max: 80 * S },
                 angle: { min: 0, max: 360 },
                 rotate: { min: 0, max: 360 },
                 scale: { start: 1, end: 0.3 },
@@ -275,7 +271,7 @@ export class EndScene extends Phaser.Scene {
                 lifespan: { min: 2000, max: 4000 },
                 frequency: 120,
                 quantity: 1,
-                gravityY: 40,
+                gravityY: 40 * S,
             }).setDepth(5)
         })
     }

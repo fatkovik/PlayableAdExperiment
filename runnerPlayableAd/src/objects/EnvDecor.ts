@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { GROUND_Y } from '../config/gameConfig'
+import { GROUND_Y, S } from '../config/gameConfig'
 
 // Environment decoration items placed along the world ground plane.
 // All items sit at GROUND_Y with origin (0.5, 1.0) so they stand on the ground.
@@ -60,9 +60,9 @@ export class EnvDecor {
   constructor(scene: Phaser.Scene) {
     for (const item of ITEMS) {
       scene.add
-        .image(item.x, GROUND_Y - 20, item.key)
+        .image(Math.round(item.x * S), GROUND_Y - Math.round(18 * S), item.key)
         .setOrigin(0.5, 1.0)
-        .setScale(item.scale)
+        .setScale(item.scale * S)
         .setDepth(3)
     }
   }

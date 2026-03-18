@@ -4,9 +4,8 @@ import { GameScene } from './scenes/GameScene'
 import { EndScene } from './scenes/EndScene'
 import { GRAVITY, WORLD_HEIGHT } from './config/gameConfig'
 
-// Keep design height fixed (GROUND_Y and all y-positions stay valid).
-// Compute width from viewport aspect ratio so the canvas fills the screen
-// with zero black bars — works in landscape, portrait, and any size.
+// WORLD_HEIGHT is already scaled to match the screen height, so the canvas
+// renders at native resolution instead of being CSS-upscaled (which caused blur).
 const aspect = window.innerWidth / window.innerHeight
 const gameWidth = Math.ceil(WORLD_HEIGHT * aspect)
 
@@ -15,6 +14,9 @@ const game = new Phaser.Game({
   width: gameWidth,
   height: WORLD_HEIGHT,
   backgroundColor: '#000000',
+  render: {
+    antialias: true,
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -26,7 +28,7 @@ const game = new Phaser.Game({
   scene: [BootScene, GameScene, EndScene],
 })
 
-// Handle orientation changes / window resize — recalculate and restart
+// Handle orientation changes / window resize
 window.addEventListener('resize', () => {
   const newAspect = window.innerWidth / window.innerHeight
   const newWidth = Math.ceil(WORLD_HEIGHT * newAspect)

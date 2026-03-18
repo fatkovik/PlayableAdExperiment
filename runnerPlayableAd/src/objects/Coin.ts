@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
+import { S } from '../config/gameConfig'
 
-const DISPLAY_SIZE = 70   // target displayed size in px (both width & height capped)
+const DISPLAY_SIZE = Math.round(70 * S)
 const COIN_KEYS = ['dollar1', 'paypal1']
 
 export class Coin extends Phaser.Physics.Arcade.Image {
