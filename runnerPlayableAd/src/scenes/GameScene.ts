@@ -30,6 +30,7 @@ export class GameScene extends Phaser.Scene {
     private hudIconBaseScaleY = 1
     private started = false
     private shownJumpHint = false
+    private bannerContainer!: Phaser.GameObjects.Container
 
     constructor() {
         super({ key: 'GameScene' })
@@ -358,27 +359,26 @@ export class GameScene extends Phaser.Scene {
 
         // Background bar
         const bg = this.add.image(width / 2, bannerY, 'uiBannerLandscape')
-            .setScrollFactor(0).setDepth(200)
-            .setDisplaySize(width, bannerH)
+            .setScrollFactor(0).setDisplaySize(width, bannerH)
 
         // "Download Now" button
         const btnW = 160
         const btnH = 40
         const btnX = width - 100
         const btnY = bannerY + 10
-        const btnBg = this.add.graphics().setScrollFactor(0).setDepth(201)
+        const btnBg = this.add.graphics().setScrollFactor(0)
         btnBg.fillStyle(0x00cc55, 1)
         btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
         btnBg.lineStyle(2, 0xffffff, 0.5)
         btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
 
-        this.add.text(btnX, btnY, 'Download Now', {
+        const btnLabel = this.add.text(btnX, btnY, 'Download Now', {
             fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(202)
+        }).setOrigin(0.5).setScrollFactor(0)
 
         // Hit zone
         const hitZone = this.add.zone(btnX, btnY, btnW, btnH)
-            .setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(203)
+            .setInteractive({ useHandCursor: true }).setScrollFactor(0)
         hitZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
             p.event.stopPropagation()
             window.open(STORE_URL, '_blank')
@@ -386,11 +386,14 @@ export class GameScene extends Phaser.Scene {
 
         // Make the whole banner also clickable
         const bannerZone = this.add.zone(width / 2, bannerY, width, bannerH)
-            .setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(199)
+            .setInteractive({ useHandCursor: true }).setScrollFactor(0)
         bannerZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
             p.event.stopPropagation()
             window.open(STORE_URL, '_blank')
         })
+
+        this.bannerContainer = this.add.container(0, 0, [bannerZone, bg, btnBg, btnLabel, hitZone])
+            .setDepth(200)
     }
 
     // ── Finish handling ────────────────────────────────────────────────────────
@@ -399,6 +402,7 @@ export class GameScene extends Phaser.Scene {
     private handleFinish(): void {
         if (this.gameOver || this.player.isDead) return
         this.gameOver = true
+        this.bannerContainer.destroy()
         this.player.halt()
         this.finishLine.snap(() => {
             this.scene.launch('EndScene', { coins: this.coinCount, won: true })
@@ -425,6 +429,7 @@ export class GameScene extends Phaser.Scene {
 
         if (this.lives <= 0) {
             this.gameOver = true
+            this.bannerContainer.destroy()
             this.player.die()
             this.time.delayedCall(RESTART_DELAY, () => {
                 this.scene.launch('EndScene', { coins: this.coinCount, won: false })
