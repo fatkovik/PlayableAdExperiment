@@ -10,6 +10,7 @@ const ANIMS = {
   idle: { start: 0,  end: 3,  frameRate: 6,  repeat: -1 },
   run:  { start: 4,  end: 7,  frameRate: 10, repeat: -1 },
   jump: { start: 8,  end: 11, frameRate: 10, repeat:  0 },
+  hit:  { start: 13, end: 13, frameRate: 1,  repeat:  0 },
   die:  { start: 12, end: 15, frameRate: 8,  repeat:  0 },
 } as const
 
@@ -76,6 +77,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.isInvincible = true
 
     const body = this.body as Phaser.Physics.Arcade.Body
+
+    // Play hit animation, then resume run
+    this.play('hit', true)
+    this.scene.time.delayedCall(HIT_SLOW_DURATION, () => {
+      if (!this.isDead) this.play('run', true)
+    })
+
+    // Red flash
+    this.setTint(0xff0000)
+    this.scene.time.delayedCall(150, () => { this.clearTint() })
 
     // brief slowdown
     body.setVelocityX(PLAYER_SPEED * HIT_SLOWDOWN)
