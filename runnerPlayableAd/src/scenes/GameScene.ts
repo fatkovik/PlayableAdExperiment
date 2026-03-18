@@ -361,20 +361,33 @@ export class GameScene extends Phaser.Scene {
         const bg = this.add.image(width / 2, bannerY, 'uiBannerLandscape')
             .setScrollFactor(0).setDisplaySize(width, bannerH)
 
-        // "Download Now" button
+        // "Download Now" button — drawn centered at (0,0) inside a container
         const btnW = 160
         const btnH = 40
         const btnX = width - 100
         const btnY = bannerY + 10
-        const btnBg = this.add.graphics().setScrollFactor(0)
+        const btnBg = this.add.graphics()
         btnBg.fillStyle(0x00cc55, 1)
-        btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
+        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 10)
         btnBg.lineStyle(2, 0xffffff, 0.5)
-        btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 10)
+        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 10)
 
-        const btnLabel = this.add.text(btnX, btnY, 'Download Now', {
+        const btnLabel = this.add.text(0, 0, 'Download Now', {
             fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
-        }).setOrigin(0.5).setScrollFactor(0)
+        }).setOrigin(0.5)
+
+        const btnContainer = this.add.container(btnX, btnY, [btnBg, btnLabel])
+            .setScrollFactor(0)
+
+        this.tweens.add({
+            targets: btnContainer,
+            scaleX: 1.08,
+            scaleY: 1.08,
+            duration: 600,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        })
 
         // Hit zone
         const hitZone = this.add.zone(btnX, btnY, btnW, btnH)
@@ -392,7 +405,7 @@ export class GameScene extends Phaser.Scene {
             window.open(STORE_URL, '_blank')
         })
 
-        this.bannerContainer = this.add.container(0, 0, [bannerZone, bg, btnBg, btnLabel, hitZone])
+        this.bannerContainer = this.add.container(0, 0, [bannerZone, bg, btnContainer, hitZone])
             .setDepth(200)
     }
 
