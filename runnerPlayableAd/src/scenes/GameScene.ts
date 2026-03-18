@@ -129,12 +129,12 @@ export class GameScene extends Phaser.Scene {
         const { width } = this.scale
 
         // Coin counter — top-right with PayPal icon underneath
-        const coinIconSize = 50
+        const coinIconSize = 80
         const coinIconX = width - 100
         const coinIconY = 45
         this.hudIconX = coinIconX
         this.hudIconY = coinIconY
-        this.hudIcon = this.add.image(coinIconX, coinIconY, 'paypal1')
+        this.hudIcon = this.add.image(coinIconX, coinIconY, 'uiPaypalHeader')
             .setScrollFactor(0).setDepth(100)
         const pSrc = this.hudIcon.texture.getSourceImage()
         const pRatio = pSrc.width / pSrc.height
@@ -142,12 +142,12 @@ export class GameScene extends Phaser.Scene {
         this.hudIconBaseScaleX = this.hudIcon.scaleX
         this.hudIconBaseScaleY = this.hudIcon.scaleY
 
-        const cointTextX = coinIconX + 10
-        const coinTextY = coinIconY + 10
+        const cointTextX = coinIconX + 20
+        const coinTextY = coinIconY
 
         this.coinText = this.add
             .text(cointTextX, coinTextY, '$0', {
-                fontSize: '20px', color: '#000000',
+                fontSize: '20px', color: '#1b49f2',
                 stroke: '#000000', strokeThickness: 2,
             })
             .setOrigin(0.5)
