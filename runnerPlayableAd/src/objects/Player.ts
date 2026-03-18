@@ -9,7 +9,7 @@ import { PLAYER_SPEED, JUMP_VELOCITY, PLAYER_SCALE } from '../config/gameConfig'
 const ANIMS = {
     idle: { start: 0, end: 3, frameRate: 6, repeat: -1 },
     run: { start: 4, end: 7, frameRate: 10, repeat: -1 },
-    jump: { start: 8, end: 11, frameRate: 10, repeat: 0 },
+    jump: { start: 9, end: 10, frameRate: 8, repeat: -1 },
     hit: { start: 13, end: 13, frameRate: 1, repeat: 0 },
     die: { start: 12, end: 15, frameRate: 8, repeat: 0 },
 } as const
@@ -44,9 +44,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             (this.displayWidth - BODY_W) / 2,
             this.displayHeight - BODY_H,   // feet-aligned
         )
-
-        // After landing animation, resume running.
-        this.on('animationcomplete-jump', () => { this.play('run', true) })
 
         this.play('run')
     }
