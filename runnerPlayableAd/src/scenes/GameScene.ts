@@ -4,6 +4,7 @@ import { Player } from '../objects/Player'
 import { Obstacle } from '../objects/Obstacle'
 import { Coin } from '../objects/Coin'
 import { FinishLine } from '../objects/FinishLine'
+import { EnvDecor } from '../objects/EnvDecor'
 import { WORLD_WIDTH, WORLD_HEIGHT, GROUND_Y, GROUND_HEIGHT } from '../config/gameConfig'
 import { LEVEL_DATA } from '../config/levelData'
 
@@ -41,6 +42,9 @@ export class GameScene extends Phaser.Scene {
     ground.setDisplaySize(WORLD_WIDTH, GROUND_HEIGHT)
     ground.setAlpha(0)
     ground.refreshBody()
+
+    // ── Environment decoration ────────────────────────────────────────────────
+    new EnvDecor(this)
 
     // ── Player ────────────────────────────────────────────────────────────────
     Player.createAnims(this.anims)
