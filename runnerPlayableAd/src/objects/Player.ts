@@ -35,7 +35,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(PLAYER_SCALE)
     this.setDepth(10)
-    this.setOrigin(0.5, 1.0)        // (x, y) = feet / bottom-centre
+    this.setOrigin(2, 1.0)        // (x, y) = feet / bottom-centre
     this.setCollideWorldBounds(true)
 
     const body = this.body as Phaser.Physics.Arcade.Body

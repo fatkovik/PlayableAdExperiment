@@ -209,7 +209,6 @@ export class FinishLine {
             const endX = peakX + driftX
             const endY = peakY + 0.5 * gravity * fallTime * fallTime
 
-            const totalDur = (peakTime + fallTime) * 1000
             const delay = Phaser.Math.Between(0, 1000)
 
             // Phase 1: shoot up to peak (fast, compact)
