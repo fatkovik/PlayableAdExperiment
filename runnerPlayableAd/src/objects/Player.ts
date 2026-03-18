@@ -17,9 +17,15 @@ const ANIMS = {
 const BODY_W = 50
 const BODY_H = 80
 
+const HIT_SLOWDOWN = 0.4       // speed multiplier during hit stagger
+const HIT_SLOW_DURATION = 400  // ms at reduced speed
+const INVINCIBLE_DURATION = 1200 // ms of invincibility after hit (includes slow period)
+const BLINK_RATE = 100          // ms per blink toggle during invincibility
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private isJumping = false
   isDead = false
+  isInvincible = false
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player', 0)
@@ -63,6 +69,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.isJumping = true
     body.setVelocityY(JUMP_VELOCITY)
     this.play('jump', true)
+  }
+
+  takeHit(): void {
+    if (this.isInvincible || this.isDead) return
+    this.isInvincible = true
+
+    const body = this.body as Phaser.Physics.Arcade.Body
+
+    // brief slowdown
+    body.setVelocityX(PLAYER_SPEED * HIT_SLOWDOWN)
+
+    // resume full speed after slow period
+    this.scene.time.delayedCall(HIT_SLOW_DURATION, () => {
+      if (!this.isDead) body.setVelocityX(PLAYER_SPEED)
+    })
+
+    // blink effect during invincibility
+    const blink = this.scene.time.addEvent({
+      delay: BLINK_RATE,
+      repeat: Math.floor(INVINCIBLE_DURATION / BLINK_RATE) - 1,
+      callback: () => { this.setAlpha(this.alpha === 1 ? 0.3 : 1) },
+    })
+
+    // end invincibility
+    this.scene.time.delayedCall(INVINCIBLE_DURATION, () => {
+      blink.destroy()
+      this.setAlpha(1)
+      this.isInvincible = false
+    })
   }
 
   halt(): void {

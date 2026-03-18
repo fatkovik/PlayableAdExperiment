@@ -12,6 +12,7 @@ import {
   dollar1Url,
   paypal1Url,
   obstacle1Url,
+  heartUrl,
 } from '../assets'
 
 // Player:  848×1233, 4 cols × 4 rows → 212×308 px per frame
@@ -51,6 +52,9 @@ export class BootScene extends Phaser.Scene {
 
     // Obstacles
     this.load.image('obstacle1', obstacle1Url)
+
+    // UI
+    this.load.image('heart', heartUrl)
   }
 
   create(): void {

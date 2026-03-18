@@ -8,6 +8,9 @@ import { WORLD_WIDTH, WORLD_HEIGHT, GROUND_Y, GROUND_HEIGHT } from '../config/ga
 import { LEVEL_DATA } from '../config/levelData'
 
 const RESTART_DELAY = 1200   // ms after death before scene restarts
+const MAX_LIVES = 3
+const HEART_SIZE = 32        // display size of each heart icon
+const HEART_GAP = 8          // spacing between hearts
 
 export class GameScene extends Phaser.Scene {
   private bg!: Background
@@ -15,6 +18,8 @@ export class GameScene extends Phaser.Scene {
   private coinCount = 0
   private coinText!: Phaser.GameObjects.Text
   private finishLine!: FinishLine
+  private lives = MAX_LIVES
+  private hearts: Phaser.GameObjects.Image[] = []
 
   constructor() {
     super({ key: 'GameScene' })
@@ -88,10 +93,26 @@ export class GameScene extends Phaser.Scene {
 
     // ── HUD ───────────────────────────────────────────────────────────────────
     this.coinCount = 0
+    this.lives = MAX_LIVES
+
     this.coinText = this.add
       .text(16, 16, '$ 0', { fontSize: '28px', color: '#ffffff', fontStyle: 'bold' })
       .setScrollFactor(0)
       .setDepth(100)
+
+    // Hearts — top-left, below coin counter
+    this.hearts = []
+    for (let i = 0; i < MAX_LIVES; i++) {
+      const heart = this.add.image(
+        16 + HEART_SIZE / 2 + i * (HEART_SIZE + HEART_GAP),
+        56,
+        'heart',
+      )
+      heart.setDisplaySize(HEART_SIZE, HEART_SIZE)
+      heart.setScrollFactor(0)
+      heart.setDepth(100)
+      this.hearts.push(heart)
+    }
   }
 
   update(_time: number, dt: number): void {
@@ -109,13 +130,31 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
-  // ── Death handling ──────────────────────────────────────────────────────────
+  // ── Hit handling ───────────────────────────────────────────────────────────
   private handleDeath(): void {
-    if (this.player.isDead) return
-    this.player.die()
+    if (this.player.isInvincible) return
+    this.lives--
 
-    this.time.delayedCall(RESTART_DELAY, () => {
-      this.scene.restart()
-    })
+    // remove a heart with a shrink + fade tween
+    const heart = this.hearts[this.lives]
+    if (heart) {
+      this.tweens.add({
+        targets: heart,
+        scaleX: 0,
+        scaleY: 0,
+        alpha: 0,
+        duration: 300,
+        ease: 'Back.easeIn',
+      })
+    }
+
+    if (this.lives <= 0) {
+      this.player.die()
+      this.time.delayedCall(RESTART_DELAY, () => {
+        this.scene.start('EndScene', { coins: this.coinCount })
+      })
+    } else {
+      this.player.takeHit()
+    }
   }
 }
