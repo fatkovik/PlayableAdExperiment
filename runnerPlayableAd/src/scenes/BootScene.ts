@@ -24,7 +24,7 @@ import {
 const PLAYER_FRAME = { frameWidth: 212, frameHeight: 308 }
 
 // Enemy spritesheet: dimensions are approximate — TODO if frames look wrong.
-const ENEMY_FRAME = { frameWidth: 210, frameHeight: 177 }
+const ENEMY_FRAME = { frameWidth: 252, frameHeight: 260 }
 
 export class BootScene extends Phaser.Scene {
   constructor() {
