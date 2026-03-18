@@ -24,6 +24,7 @@ import uiBannerLandscapeUrl from './assets/UI/uiBannerLandscape.webp?url'
 import uiPaypalHeader from './assets/UI/paypalHeader.webp?url'
 import uiFailIcon from './assets/UI/FailIcon.png?url'
 import uiBackgroundPulse from './assets/UI/backgroundPulseEndScreen.png?url'
+import uiPointerHand from './assets/UI/pointerHand.png?url'
 
 export {
     playerSheetUrl,
@@ -43,4 +44,5 @@ export {
     uiPaypalHeader,
     uiFailIcon,
     uiBackgroundPulse,
+    uiPointerHand,
 }

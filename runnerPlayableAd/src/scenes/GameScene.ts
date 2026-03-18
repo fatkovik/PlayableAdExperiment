@@ -28,6 +28,7 @@ export class GameScene extends Phaser.Scene {
     private hudIconY = 0
     private hudIconBaseScaleX = 1
     private hudIconBaseScaleY = 1
+    private started = false
 
     constructor() {
         super({ key: 'GameScene' })
@@ -55,7 +56,7 @@ export class GameScene extends Phaser.Scene {
 
         // ── Player ────────────────────────────────────────────────────────────────
         Player.createAnims(this.anims)
-        this.player = new Player(this, 150, GROUND_Y)
+        this.player = new Player(this, 300, GROUND_Y)
 
         // ── Obstacles & Coins from level data ─────────────────────────────────────
         const obstacles = this.physics.add.staticGroup()
@@ -115,8 +116,12 @@ export class GameScene extends Phaser.Scene {
         this.cameras.main.setFollowOffset(100, 0)
 
         // ── Input ─────────────────────────────────────────────────────────────────
-        this.input.keyboard!.on('keydown-SPACE', () => { this.player.jump() })
+        this.input.keyboard!.on('keydown-SPACE', () => {
+            if (!this.started) return
+            this.player.jump()
+        })
         this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+            if (!this.started) return
             // Don't jump when tapping the bottom banner
             if (currentlyOver.length > 0) return
             this.player.jump()
@@ -126,7 +131,7 @@ export class GameScene extends Phaser.Scene {
         this.coinCount = 0
         this.lives = MAX_LIVES
 
-        const { width } = this.scale
+        const { width, height } = this.scale
 
         // Coin counter — top-right with PayPal icon underneath
         const coinIconSize = 80
@@ -170,6 +175,61 @@ export class GameScene extends Phaser.Scene {
 
         // ── Bottom banner (CTA) ─────────────────────────────────────────────────
         this.createBottomBanner()
+
+        // ── Tap to start ────────────────────────────────────────────────────────
+        this.started = false
+        this.player.setY(GROUND_Y)
+        this.player.play('idle')
+        this.physics.pause()
+
+        const tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
+            fontSize: '28px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 4,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
+
+        const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
+            .setScrollFactor(0).setDepth(150)
+        const handSrc = hand.texture.getSourceImage()
+        const handRatio = handSrc.width / handSrc.height
+        const handH = 60
+        hand.setDisplaySize(handH * handRatio, handH)
+
+        // Small bobbing animation on the hand
+        this.tweens.add({
+            targets: hand,
+            y: height * 0.52 + 10,
+            duration: 600,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        })
+
+        // Pulse the text slightly
+        this.tweens.add({
+            targets: tapText,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+        })
+
+        // On first tap, start the game
+        const startGame = () => {
+            if (this.started) return
+            this.started = true
+            this.physics.resume()
+            this.player.play('run', true)
+            this.tweens.killTweensOf([tapText, hand])
+            tapText.destroy()
+            hand.destroy()
+        }
+        this.input.once('pointerdown', startGame)
+        this.input.keyboard!.once('keydown-SPACE', startGame)
     }
 
     update(_time: number, dt: number): void {
