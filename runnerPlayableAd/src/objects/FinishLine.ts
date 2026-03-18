@@ -11,7 +11,7 @@ const SWAY_AMP = 3                    // gentle idle sway in px
 const SWAY_SPEED = 1.2                // cycles / sec
 const SAG_AMOUNT = 22                 // more sag for longer rope
 const ROPE_Y = GROUND_Y - 50         // chest-height of the player
-const ROPE_LOW_OFFSET = 50                  // right pole sits this many px lower than left
+const ROPE_LOW_OFFSET = 135                 // right pole sits this many px lower than left
 
 // Cut animation
 const CUT_GRAVITY = 600               // px/s² gravity on cut halves
@@ -33,6 +33,8 @@ export class FinishLine {
   private cutTime = 0
   private leftHalf!: Phaser.GameObjects.Rope
   private rightHalf!: Phaser.GameObjects.Rope
+  private leftBaseY: number[] = []     // initial y offsets at moment of cut
+  private rightBaseY: number[] = []
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -90,32 +92,25 @@ export class FinishLine {
   /* ── Cut halves ──────────────────────────────────────────────────────── */
 
   private createCutHalves(): void {
-    const halfCount = Math.ceil(NUM_POINTS / 2)
-    const halfSpan = TAPE_WIDTH / 2
-
-    // Snapshot current rope point y-offsets
+    const midIdx = Math.floor(NUM_POINTS / 2)
     const srcPoints = this.rope.points as Phaser.Math.Vector2[]
 
-    // Left half — attached to left pole, free end in the middle
+    // Left half — indices 0..midIdx, same x/y as original rope
     const leftPts: Phaser.Math.Vector2[] = []
-    for (let i = 0; i < halfCount; i++) {
-      const t = i / (halfCount - 1)
-      leftPts.push(new Phaser.Math.Vector2(
-        -halfSpan + t * halfSpan,
-        srcPoints[i]?.y ?? 0,
-      ))
+    this.leftBaseY = []
+    for (let i = 0; i <= midIdx; i++) {
+      leftPts.push(new Phaser.Math.Vector2(srcPoints[i].x, srcPoints[i].y))
+      this.leftBaseY.push(srcPoints[i].y)
     }
     this.leftHalf = this.scene.add.rope(FINISH_X, ROPE_Y, 'finishTape', undefined, leftPts)
     this.leftHalf.setDepth(9)
 
-    // Right half — attached to right pole, free end in the middle
+    // Right half — indices midIdx..end, same x/y as original rope
     const rightPts: Phaser.Math.Vector2[] = []
-    for (let i = 0; i < halfCount; i++) {
-      const t = i / (halfCount - 1)
-      rightPts.push(new Phaser.Math.Vector2(
-        t * halfSpan,
-        srcPoints[halfCount - 1 + i]?.y ?? 0,
-      ))
+    this.rightBaseY = []
+    for (let i = midIdx; i < NUM_POINTS; i++) {
+      rightPts.push(new Phaser.Math.Vector2(srcPoints[i].x, srcPoints[i].y))
+      this.rightBaseY.push(srcPoints[i].y)
     }
     this.rightHalf = this.scene.add.rope(FINISH_X, ROPE_Y, 'finishTape', undefined, rightPts)
     this.rightHalf.setDepth(9)
@@ -123,50 +118,35 @@ export class FinishLine {
 
   private updateCutHalves(dt: number): void {
     this.cutTime += dt
-
     const t = this.cutTime
-    const halfCount = Math.ceil(NUM_POINTS / 2)
 
-    // Left half — pivot at index 0 (pole), free end swings down
+    // Left half — pivot at index 0 (left pole), free end (last index) swings down
     const leftPts = this.leftHalf.points as Phaser.Math.Vector2[]
     for (let i = 0; i < leftPts.length; i++) {
       const norm = i / (leftPts.length - 1)   // 0 at pole, 1 at cut end
-      // Swing: free end drops under gravity + pendulum-like swing
       const swing = Math.sin(t * CUT_SWING_SPEED) * Math.exp(-t * CUT_SWING_DECAY)
       const gravity = 0.5 * CUT_GRAVITY * t * t * norm
       const fling = CUT_INITIAL_FLING * t * norm * Math.exp(-t * 3)
-      leftPts[i].y = norm * (gravity + fling + swing * 30)
+      leftPts[i].y = this.leftBaseY[i] + norm * (gravity + fling + swing * 30)
     }
     this.leftHalf.setDirty()
 
-    // Right half — pivot at last index (pole), free end swings down
+    // Right half — pivot at last index (right pole), free end (index 0) swings down
     const rightPts = this.rightHalf.points as Phaser.Math.Vector2[]
+    const lastIdx = rightPts.length - 1
     for (let i = 0; i < rightPts.length; i++) {
-      const norm = 1 - i / (rightPts.length - 1)   // 1 at cut end, 0 at pole
+      const norm = 1 - i / lastIdx   // 1 at cut end (i=0), 0 at pole (i=last)
       const swing = Math.sin(t * CUT_SWING_SPEED + 0.5) * Math.exp(-t * CUT_SWING_DECAY)
       const gravity = 0.5 * CUT_GRAVITY * t * t * norm
       const fling = CUT_INITIAL_FLING * t * norm * Math.exp(-t * 3)
-      rightPts[i].y = norm * (gravity + fling + swing * 30)
+      rightPts[i].y = this.rightBaseY[i] + norm * (gravity + fling + swing * 30)
     }
     this.rightHalf.setDirty()
 
-    // Clamp — stop once the halves have fallen to the ground
-    const maxDrop = GROUND_Y - ROPE_Y
-    if (0.5 * CUT_GRAVITY * t * t > maxDrop + 40) {
-      // Freeze in final dangling position along poles
-      for (let i = 0; i < leftPts.length; i++) {
-        const norm = i / (leftPts.length - 1)
-        leftPts[i].x = -TAPE_WIDTH / 2
-        leftPts[i].y = norm * maxDrop
-      }
-      for (let i = 0; i < rightPts.length; i++) {
-        const norm = i / (rightPts.length - 1)
-        rightPts[i].x = TAPE_WIDTH / 2
-        rightPts[i].y = (1 - norm) * maxDrop
-      }
-      this.leftHalf.setDirty()
-      this.rightHalf.setDirty()
-      this.isCut = false   // stop updating
+    // Clamp — stop once the free ends have fallen past the ground
+    const maxDrop = GROUND_Y - ROPE_Y + 40
+    if (0.5 * CUT_GRAVITY * t * t > maxDrop) {
+      this.isCut = false   // stop updating, freeze in place
     }
   }
 
