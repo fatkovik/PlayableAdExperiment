@@ -13,7 +13,7 @@ const MAX_LIVES = 3
 const HEART_GAP = Math.round(8 * S)
 
 const CHEERS = [
-    { x: 900,  text: 'Awesome!' },
+    { x: 1200,  text: 'Awesome!' },
     { x: 2100, text: 'Amazing!' },
     { x: 3400, text: "You're a pro!" },
 ]
@@ -80,7 +80,7 @@ export class GameScene extends Phaser.Scene {
         // ── Enemies ──────────────────────────────────────────────────────────────
         Enemy.createAnims(this.anims)
         this.enemies = this.physics.add.group()
-        const ENEMY_POSITIONS = [1100, 2500, 3200].map(x => Math.round(x * S))
+        const ENEMY_POSITIONS = [1350, 2500, 3200].map(x => Math.round(x * S))
         for (const ex of ENEMY_POSITIONS) {
             this.enemies.add(new Enemy(this, ex))
         }
@@ -251,7 +251,7 @@ export class GameScene extends Phaser.Scene {
         this.enemies.getChildren().forEach(e => (e as Enemy).update())
 
         // Pause and show jump hint when approaching first obstacle
-        if (this.started && !this.shownJumpHint && this.player.x >= Math.round(600 * S)) {
+        if (this.started && !this.shownJumpHint && this.player.x >= Math.round(900 * S)) {
             this.shownJumpHint = true
             this.showJumpHint()
         }
