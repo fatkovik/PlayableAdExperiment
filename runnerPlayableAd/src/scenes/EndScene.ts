@@ -20,6 +20,16 @@ export class EndScene extends Phaser.Scene {
     }
 
     create(): void {
+        // Restart the scene on resize so all UI rebuilds for the new dimensions
+        const onResize = () => {
+            this.scale.off('resize', onResize)
+            this.scene.restart({ coins: this.coinCount, won: this.won })
+        }
+        this.scale.on('resize', onResize)
+        this.events.on('shutdown', () => {
+            this.scale.off('resize', onResize)
+        })
+
         const { width, height } = this.scale
         const cx = width / 2
         const us = uiScale(this)

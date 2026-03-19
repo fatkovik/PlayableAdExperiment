@@ -37,6 +37,11 @@ export class GameScene extends Phaser.Scene {
     private bannerContainer!: Phaser.GameObjects.Container
     private nextCheerIdx = 0
     private bgMusic!: Phaser.Sound.BaseSound
+    // Overlay elements that need repositioning on resize
+    private tapText: Phaser.GameObjects.Text | null = null
+    private tapHand: Phaser.GameObjects.Image | null = null
+    private hintText: Phaser.GameObjects.Text | null = null
+    private hintHand: Phaser.GameObjects.Image | null = null
 
     constructor() {
         super({ key: 'GameScene' })
@@ -204,25 +209,25 @@ export class GameScene extends Phaser.Scene {
         this.player.play('idle')
         this.physics.pause()
 
-        const tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
+        this.tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
             fontSize: `${Math.round(36 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
             strokeThickness: Math.round(4 * us),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
-        fitText(tapText, width * 0.9)
+        fitText(this.tapText, width * 0.9)
 
-        const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
+        this.tapHand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
-        const handSrc = hand.texture.getSourceImage()
+        const handSrc = this.tapHand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
         const handH = Math.round(60 * us)
-        hand.setDisplaySize(handH * handRatio, handH)
+        this.tapHand.setDisplaySize(handH * handRatio, handH)
 
         // Small bobbing animation on the hand
         this.tweens.add({
-            targets: hand,
+            targets: this.tapHand,
             y: height * 0.52 + Math.round(10 * us),
             duration: 600,
             yoyo: true,
@@ -231,9 +236,9 @@ export class GameScene extends Phaser.Scene {
         })
 
         // Pulse the text slightly (relative to fitted scale)
-        const tapBaseScale = tapText.scaleX
+        const tapBaseScale = this.tapText.scaleX
         this.tweens.add({
-            targets: tapText,
+            targets: this.tapText,
             scaleX: tapBaseScale * 1.05,
             scaleY: tapBaseScale * 1.05,
             duration: 800,
@@ -250,9 +255,11 @@ export class GameScene extends Phaser.Scene {
             this.physics.resume()
             this.player.play('run', true)
             this.bgMusic.play()
-            this.tweens.killTweensOf([tapText, hand])
-            tapText.destroy()
-            hand.destroy()
+            this.tweens.killTweensOf([this.tapText!, this.tapHand!])
+            this.tapText!.destroy()
+            this.tapHand!.destroy()
+            this.tapText = null
+            this.tapHand = null
         }
         this.input.once('pointerdown', startGame)
         this.input.keyboard!.once('keydown-SPACE', startGame)
@@ -287,23 +294,23 @@ export class GameScene extends Phaser.Scene {
         const { width, height } = this.scale
         const us = uiScale(this)
 
-        const hintText = this.add.text(width / 2, height * 0.38, 'Jump to avoid enemies!', {
+        this.hintText = this.add.text(width / 2, height * 0.38, 'Jump to avoid enemies!', {
             fontSize: `${Math.round(28 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
             strokeThickness: Math.round(4 * us),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
-        fitText(hintText, width * 0.9)
+        fitText(this.hintText, width * 0.9)
 
-        const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
+        this.hintHand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
-        const handSrc = hand.texture.getSourceImage()
+        const handSrc = this.hintHand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
-        hand.setDisplaySize(Math.round(60 * us) * handRatio, Math.round(60 * us))
+        this.hintHand.setDisplaySize(Math.round(60 * us) * handRatio, Math.round(60 * us))
 
         this.tweens.add({
-            targets: hand,
+            targets: this.hintHand,
             y: height * 0.52 + Math.round(10 * us),
             duration: 600,
             yoyo: true,
@@ -311,9 +318,9 @@ export class GameScene extends Phaser.Scene {
             ease: 'Sine.easeInOut',
         })
 
-        const hintBaseScale = hintText.scaleX
+        const hintBaseScale = this.hintText.scaleX
         this.tweens.add({
-            targets: hintText,
+            targets: this.hintText,
             scaleX: hintBaseScale * 1.05,
             scaleY: hintBaseScale * 1.05,
             duration: 800,
@@ -325,9 +332,11 @@ export class GameScene extends Phaser.Scene {
         const resume = () => {
             this.physics.resume()
             this.player.anims.resume()
-            this.tweens.killTweensOf([hintText, hand])
-            hintText.destroy()
-            hand.destroy()
+            this.tweens.killTweensOf([this.hintText!, this.hintHand!])
+            this.hintText!.destroy()
+            this.hintHand!.destroy()
+            this.hintText = null
+            this.hintHand = null
         }
         this.input.once('pointerdown', resume)
         this.input.keyboard!.once('keydown-SPACE', resume)
@@ -461,6 +470,78 @@ export class GameScene extends Phaser.Scene {
             this.bannerContainer.destroy()
         }
         this.createBottomBanner()
+
+        // Reposition tap-to-start overlay
+        if (this.tapText) {
+            this.tweens.killTweensOf(this.tapText)
+            this.tapText.setPosition(w / 2, h * 0.38)
+            this.tapText.setFontSize(Math.round(36 * us))
+            this.tapText.setStroke('#000000', Math.round(4 * us))
+            this.tapText.setScale(1)
+            fitText(this.tapText, w * 0.9)
+            const tapBaseScale = this.tapText.scaleX
+            this.tweens.add({
+                targets: this.tapText,
+                scaleX: tapBaseScale * 1.05,
+                scaleY: tapBaseScale * 1.05,
+                duration: 800,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            })
+        }
+        if (this.tapHand) {
+            this.tweens.killTweensOf(this.tapHand)
+            const handSrc = this.tapHand.texture.getSourceImage()
+            const handRatio = handSrc.width / handSrc.height
+            const handH = Math.round(60 * us)
+            this.tapHand.setDisplaySize(handH * handRatio, handH)
+            this.tapHand.setPosition(w / 2, h * 0.52)
+            this.tweens.add({
+                targets: this.tapHand,
+                y: h * 0.52 + Math.round(10 * us),
+                duration: 600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            })
+        }
+
+        // Reposition jump hint overlay
+        if (this.hintText) {
+            this.tweens.killTweensOf(this.hintText)
+            this.hintText.setPosition(w / 2, h * 0.38)
+            this.hintText.setFontSize(Math.round(28 * us))
+            this.hintText.setStroke('#000000', Math.round(4 * us))
+            this.hintText.setScale(1)
+            fitText(this.hintText, w * 0.9)
+            const hintBaseScale = this.hintText.scaleX
+            this.tweens.add({
+                targets: this.hintText,
+                scaleX: hintBaseScale * 1.05,
+                scaleY: hintBaseScale * 1.05,
+                duration: 800,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            })
+        }
+        if (this.hintHand) {
+            this.tweens.killTweensOf(this.hintHand)
+            const handSrc = this.hintHand.texture.getSourceImage()
+            const handRatio = handSrc.width / handSrc.height
+            const handH = Math.round(60 * us)
+            this.hintHand.setDisplaySize(handH * handRatio, handH)
+            this.hintHand.setPosition(w / 2, h * 0.52)
+            this.tweens.add({
+                targets: this.hintHand,
+                y: h * 0.52 + Math.round(10 * us),
+                duration: 600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            })
+        }
     }
 
     // ── Bottom banner ─────────────────────────────────────────────────────────
@@ -481,13 +562,13 @@ export class GameScene extends Phaser.Scene {
 
         const children: Phaser.GameObjects.GameObject[] = [bg]
 
-        // "Download Now" button — only shown on tall / portrait screens
-        if (isPortrait) {
+        // "Download Now" button — dont shown on tall / portrait screens
+        if (!isPortrait) {
             const btnW = Math.round(Math.min(width * 0.35, 200))
             const btnH = Math.round(bannerH * 0.6)
             const btnR = Math.round(btnH * 0.35)
             const btnX = width - btnW / 2 - Math.round(width * 0.04)
-            const btnY = width < 750 ? bannerTop - btnH / 2 + 20 - Math.round(4) : bannerCenterY
+            const btnY = bannerCenterY
             const border = Math.max(3, Math.round(btnH * 0.08))
             const btnBg = this.add.graphics()
             // Dark brown outer border
