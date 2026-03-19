@@ -1,9 +1,11 @@
 // ── Resolution scale ─────────────────────────────────────────────────────────
-// The game was designed for a 600 px-tall canvas.  On modern screens the canvas
-// is CSS-upscaled which looks blurry.  We compute a scale factor so the canvas
-// renders at (approximately) the device's native resolution.
+// The game was designed for a 600 px-tall canvas.  We compute a scale factor so
+// the canvas renders at (approximately) the device's native resolution.
+// Using the LARGER viewport dimension ensures WORLD_HEIGHT covers both portrait
+// and landscape without CSS upscaling (which causes blur).  Capped at 2× to
+// keep the canvas manageable on large desktops.
 const DESIGN_H = 600
-export const S = Math.max(1, Math.min(window.innerWidth, window.innerHeight) / DESIGN_H)
+export const S = Math.min(2, Math.max(1, Math.max(window.innerWidth, window.innerHeight) / DESIGN_H))
 
 // ── World ─────────────────────────────────────────────────────────────────────
 export const WORLD_WIDTH  = Math.round(4000 * S)
