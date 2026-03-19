@@ -28,6 +28,7 @@ import winSoundUrl from './assets/Sounds/win.mp3?url'
 
 // UI
 import uiBannerLandscapeUrl from './assets/UI/uiBannerLandscape.webp?url'
+import uiBannerPortraitUrl from './assets/UI/uiBannerPortrait.webp?url'
 import uiPaypalHeader from './assets/UI/paypalHeader.webp?url'
 import uiFailIcon from './assets/UI/FailIcon.png?url'
 import uiBackgroundPulse from './assets/UI/backgroundPulseEndScreen.png?url'
@@ -53,6 +54,7 @@ export {
     obstacle1Url,
     obstacleOutlineUrl,
     uiBannerLandscapeUrl,
+    uiBannerPortraitUrl,
     uiPaypalHeader,
     uiFailIcon,
     uiBackgroundPulse,

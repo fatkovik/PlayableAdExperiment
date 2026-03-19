@@ -418,10 +418,11 @@ export class GameScene extends Phaser.Scene {
     // ── Bottom banner ─────────────────────────────────────────────────────────
     private createBottomBanner(): void {
         const { width, height } = this.scale
+        const isShortScreen = height < 750
 
-        // Banner height derived from native aspect ratio at full screen width
-        // so the image always covers the entire bottom edge without stretching.
-        const bg = this.add.image(0, 0, 'uiBannerLandscape').setScrollFactor(0)
+        // Pick the right banner texture based on vertical resolution
+        const bannerKey = isShortScreen ? 'uiBannerPortrait' : 'uiBannerLandscape'
+        const bg = this.add.image(0, 0, bannerKey).setScrollFactor(0)
         const bannerSrc = bg.texture.getSourceImage()
         const bannerRatio = bannerSrc.width / bannerSrc.height
         const bannerH = Math.round(width / bannerRatio)
@@ -429,46 +430,58 @@ export class GameScene extends Phaser.Scene {
         const bannerCenterY = bannerTop + bannerH / 2
         bg.setOrigin(0, 0.5).setPosition(0, bannerCenterY).setDisplaySize(width, bannerH)
 
-        // "Download Now" button — sized relative to banner
-        const btnW = Math.round(Math.min(width * 0.35, 200))
-        const btnH = Math.round(bannerH * 0.6)
-        const btnR = Math.round(btnH * 0.25)
-        const btnX = width - btnW / 2 - Math.round(width * 0.04)
-        // On narrow screens the button overlaps the banner graphics — shift it above the banner
-        const btnY = width < 750 ? bannerTop - btnH / 2 + 20 - Math.round(4) : bannerCenterY
-        const btnBg = this.add.graphics()
-        btnBg.fillStyle(0x00cc55, 1)
-        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
-        btnBg.lineStyle(2, 0xffffff, 0.5)
-        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
+        const children: Phaser.GameObjects.GameObject[] = [bg]
 
-        const btnFontSize = Math.max(10, Math.round(Math.min(btnH * 0.45, btnW * 0.11)))
-        const btnLabel = this.add.text(0, 0, 'Download Now', {
-            fontSize: `${btnFontSize}px`, color: '#ffffff', fontStyle: 'bold',
-        }).setOrigin(0.5)
+        // "Download Now" button — only shown on tall screens
+        if (!isShortScreen) {
+            const btnW = Math.round(Math.min(width * 0.35, 200))
+            const btnH = Math.round(bannerH * 0.6)
+            const btnR = Math.round(btnH * 0.35)
+            const btnX = width - btnW / 2 - Math.round(width * 0.04)
+            const btnY = width < 750 ? bannerTop - btnH / 2 + 20 - Math.round(4) : bannerCenterY
+            const border = Math.max(3, Math.round(btnH * 0.08))
+            const btnBg = this.add.graphics()
+            // Dark brown outer border
+            btnBg.fillStyle(0x8B5E2F, 1)
+            btnBg.fillRoundedRect(-btnW / 2 - border, -btnH / 2 - border, btnW + border * 2, btnH + border * 2, btnR + border)
+            // Orange fill
+            btnBg.fillStyle(0xFFA626, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
+            // Lighter highlight on top half
+            btnBg.fillStyle(0xFFBF4D, 0.5)
+            btnBg.fillRoundedRect(-btnW / 2 + 2, -btnH / 2 + 2, btnW - 4, btnH * 0.45, { tl: btnR, tr: btnR, bl: 0, br: 0 })
 
-        const btnContainer = this.add.container(btnX, btnY, [btnBg, btnLabel])
-            .setScrollFactor(0)
+            const btnFontSize = Math.max(10, Math.round(Math.min(btnH * 0.45, btnW * 0.13)))
+            const btnLabel = this.add.text(0, 0, 'DOWNLOAD', {
+                fontSize: `${btnFontSize}px`, color: '#ffffff', fontStyle: 'bold',
+                stroke: '#8B5E2F', strokeThickness: Math.max(1, Math.round(btnFontSize * 0.12)),
+                shadow: { offsetY: 1, color: '#00000044', blur: 2, fill: true },
+            }).setOrigin(0.5)
 
-        this.tweens.add({
-            targets: btnContainer,
-            scaleX: 1.08,
-            scaleY: 1.08,
-            duration: 600,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-        })
+            const btnContainer = this.add.container(btnX, btnY, [btnBg, btnLabel])
+                .setScrollFactor(0)
 
-        // Hit zone
-        const hitZone = this.add.zone(btnX, btnY, btnW, btnH)
-            .setInteractive({ useHandCursor: true }).setScrollFactor(0)
-        hitZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
-            p.event.stopPropagation()
-            window.open(STORE_URL, '_blank')
-        })
+            this.tweens.add({
+                targets: btnContainer,
+                scaleX: 1.08,
+                scaleY: 1.08,
+                duration: 600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            })
 
-        // Make the whole banner also clickable
+            const hitZone = this.add.zone(btnX, btnY, btnW, btnH)
+                .setInteractive({ useHandCursor: true }).setScrollFactor(0)
+            hitZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
+                p.event.stopPropagation()
+                window.open(STORE_URL, '_blank')
+            })
+
+            children.push(btnContainer, hitZone)
+        }
+
+        // Make the whole banner clickable
         const bannerZone = this.add.zone(width / 2, bannerCenterY, width, bannerH)
             .setInteractive({ useHandCursor: true }).setScrollFactor(0)
         bannerZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -476,7 +489,8 @@ export class GameScene extends Phaser.Scene {
             window.open(STORE_URL, '_blank')
         })
 
-        this.bannerContainer = this.add.container(0, 0, [bannerZone, bg, btnContainer, hitZone])
+        children.unshift(bannerZone)
+        this.bannerContainer = this.add.container(0, 0, children)
             .setDepth(200)
     }
 
