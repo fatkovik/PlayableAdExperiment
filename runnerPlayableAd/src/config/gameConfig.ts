@@ -18,11 +18,11 @@ export const GAMEPLAY_Y    = Math.round(450 * S)
 export const GROUND_HEIGHT = WORLD_HEIGHT - GAMEPLAY_Y
 
 // ── Physics ───────────────────────────────────────────────────────────────────
-export const GRAVITY = Math.round(800 * S)
+export const GRAVITY = Math.round(1400 * S)
 
 // ── Player ────────────────────────────────────────────────────────────────────
 export const PLAYER_SPEED  = Math.round(300 * S)
-export const JUMP_VELOCITY = Math.round(-550 * S)
+export const JUMP_VELOCITY = Math.round(-650 * S)
 export const PLAYER_SCALE  = 0.5 * S
 
 export const STORE_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
