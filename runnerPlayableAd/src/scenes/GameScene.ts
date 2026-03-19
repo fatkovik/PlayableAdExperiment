@@ -466,22 +466,23 @@ export class GameScene extends Phaser.Scene {
     // ── Bottom banner ─────────────────────────────────────────────────────────
     private createBottomBanner(): void {
         const { width, height } = this.scale
-        const isShortScreen = height < 750
+        const isPortrait = height > width
 
-        // Pick the right banner texture based on vertical resolution
-        const bannerKey = isShortScreen ? 'uiBannerPortrait' : 'uiBannerLandscape'
+        // Pick the right banner texture based on orientation, not just height
+        const bannerKey = isPortrait ? 'uiBannerPortrait' : 'uiBannerLandscape'
         const bg = this.add.image(0, 0, bannerKey).setScrollFactor(0)
         const bannerSrc = bg.texture.getSourceImage()
         const bannerRatio = bannerSrc.width / bannerSrc.height
-        const bannerH = Math.round(width / bannerRatio)
+        // Cap banner height to 30% of screen so it never overwhelms the game
+        const bannerH = Math.round(Math.min(width / bannerRatio, height * 0.3))
         const bannerTop = height - bannerH
         const bannerCenterY = bannerTop + bannerH / 2
         bg.setOrigin(0, 0.5).setPosition(0, bannerCenterY).setDisplaySize(width, bannerH)
 
         const children: Phaser.GameObjects.GameObject[] = [bg]
 
-        // "Download Now" button — only shown on tall screens
-        if (!isShortScreen) {
+        // "Download Now" button — only shown on tall / portrait screens
+        if (isPortrait) {
             const btnW = Math.round(Math.min(width * 0.35, 200))
             const btnH = Math.round(bannerH * 0.6)
             const btnR = Math.round(btnH * 0.35)
