@@ -19,6 +19,13 @@ import paypal1Url from './assets/Level/Gatherable/Paypal1.webp?url'
 import obstacle1Url from './assets/Level/Obstacles/Obstacle1.webp?url'
 import obstacleOutlineUrl from './assets/Level/Obstacles/obstackeOutline.webp?url'
 
+// Sounds
+import backgroundMusicUrl from './assets/Sounds/backgroundMusic.mp3?url'
+import damageSoundUrl from './assets/Sounds/damage.mp3?url'
+import itemPickupSoundUrl from './assets/Sounds/itemPickupSound.mp3?url'
+import losingSoundUrl from './assets/Sounds/losingSound.mp3?url'
+import winSoundUrl from './assets/Sounds/win.mp3?url'
+
 // UI
 import uiBannerLandscapeUrl from './assets/UI/uiBannerLandscape.webp?url'
 import uiPaypalHeader from './assets/UI/paypalHeader.webp?url'
@@ -27,6 +34,11 @@ import uiBackgroundPulse from './assets/UI/backgroundPulseEndScreen.png?url'
 import uiPointerHand from './assets/UI/pointerHand.png?url'
 
 export {
+    backgroundMusicUrl,
+    damageSoundUrl,
+    itemPickupSoundUrl,
+    losingSoundUrl,
+    winSoundUrl,
     playerSheetUrl,
     enemySheetUrl,
     backgroundUrl,

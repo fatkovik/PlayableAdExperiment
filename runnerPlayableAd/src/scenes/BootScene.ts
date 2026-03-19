@@ -18,6 +18,11 @@ import {
     uiBackgroundPulse,
     uiFailIcon,
     uiPointerHand,
+    backgroundMusicUrl,
+    damageSoundUrl,
+    itemPickupSoundUrl,
+    losingSoundUrl,
+    winSoundUrl,
 } from '../assets'
 
 // Player:  848×1233, 4 cols × 4 rows → 212×308 px per frame
@@ -67,6 +72,13 @@ export class BootScene extends Phaser.Scene {
         this.load.image('uiPaypalHeader', uiPaypalHeader)
         this.load.image('uiBackgroundPulse', uiBackgroundPulse)
         this.load.image('uiPointerHand', uiPointerHand)
+
+        // Sounds
+        this.load.audio('bgMusic', backgroundMusicUrl)
+        this.load.audio('damage', damageSoundUrl)
+        this.load.audio('itemPickup', itemPickupSoundUrl)
+        this.load.audio('losing', losingSoundUrl)
+        this.load.audio('win', winSoundUrl)
     }
 
     create(): void {

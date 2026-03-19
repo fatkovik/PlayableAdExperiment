@@ -36,6 +36,7 @@ export class GameScene extends Phaser.Scene {
     private shownJumpHint = false
     private bannerContainer!: Phaser.GameObjects.Container
     private nextCheerIdx = 0
+    private bgMusic!: Phaser.Sound.BaseSound
 
     constructor() {
         super({ key: 'GameScene' })
@@ -112,6 +113,7 @@ export class GameScene extends Phaser.Scene {
             this.coinCount += coinAmount
             this.coinText.setText(`$${this.coinCount}`)
             this.flyCoinToIcon(coin.x, coin.y, coin.texture.key)
+            this.sound.play('itemPickup', { volume: 0.5 })
         })
 
         // Finish line → win
@@ -235,11 +237,13 @@ export class GameScene extends Phaser.Scene {
         })
 
         // On first tap, start the game
+        this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 })
         const startGame = () => {
             if (this.started) return
             this.started = true
             this.physics.resume()
             this.player.play('run', true)
+            this.bgMusic.play()
             this.tweens.killTweensOf([tapText, hand])
             tapText.destroy()
             hand.destroy()
@@ -481,6 +485,8 @@ export class GameScene extends Phaser.Scene {
         if (this.gameOver || this.player.isDead) return
         this.gameOver = true
         this.bannerContainer.destroy()
+        this.bgMusic.stop()
+        this.sound.play('win', { volume: 0.6 })
         this.player.halt()
         this.finishLine.snap(() => {
             this.scene.launch('EndScene', { coins: this.coinCount, won: true })
@@ -577,10 +583,13 @@ export class GameScene extends Phaser.Scene {
             this.gameOver = true
             this.bannerContainer.destroy()
             this.player.die()
+            this.bgMusic.stop()
+            this.sound.play('losing', { volume: 0.6 })
             this.showFailIcon(() => {
                 this.scene.launch('EndScene', { coins: this.coinCount, won: false })
             })
         } else {
+            this.sound.play('damage', { volume: 0.5 })
             this.player.takeHit()
         }
     }
