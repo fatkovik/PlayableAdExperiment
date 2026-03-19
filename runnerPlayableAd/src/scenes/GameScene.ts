@@ -73,7 +73,7 @@ export class GameScene extends Phaser.Scene {
         // ── Enemies ──────────────────────────────────────────────────────────────
         Enemy.createAnims(this.anims)
         this.enemies = this.physics.add.group()
-        const ENEMY_POSITIONS = [850, 1350, 1900, 2550].map(x => Math.round(x * S))
+        const ENEMY_POSITIONS = [1100, 2500, 3200].map(x => Math.round(x * S))
         for (const ex of ENEMY_POSITIONS) {
             this.enemies.add(new Enemy(this, ex))
         }
