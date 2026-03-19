@@ -20,7 +20,6 @@ import obstacle1Url from './assets/Level/Obstacles/Obstacle1.webp?url'
 import obstacleOutlineUrl from './assets/Level/Obstacles/obstackeOutline.webp?url'
 
 // UI
-import heartUrl from './assets/UI/red-heart.png?url'
 import uiBannerLandscapeUrl from './assets/UI/uiBannerLandscape.webp?url'
 import uiPaypalHeader from './assets/UI/paypalHeader.webp?url'
 import uiFailIcon from './assets/UI/FailIcon.png?url'
@@ -41,7 +40,6 @@ export {
     paypal1Url,
     obstacle1Url,
     obstacleOutlineUrl,
-    heartUrl,
     uiBannerLandscapeUrl,
     uiPaypalHeader,
     uiFailIcon,

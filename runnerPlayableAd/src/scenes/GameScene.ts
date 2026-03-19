@@ -10,7 +10,6 @@ import { WORLD_WIDTH, WORLD_HEIGHT, GAMEPLAY_Y, GROUND_HEIGHT, STORE_URL, S } fr
 import { LEVEL_DATA } from '../config/levelData'
 
 const MAX_LIVES = 3
-const HEART_SIZE = Math.round(32 * S)
 const HEART_GAP = Math.round(8 * S)
 
 export class GameScene extends Phaser.Scene {
@@ -20,7 +19,7 @@ export class GameScene extends Phaser.Scene {
     private coinText!: Phaser.GameObjects.Text
     private finishLine!: FinishLine
     private lives = MAX_LIVES
-    private hearts: Phaser.GameObjects.Image[] = []
+    private hearts: Phaser.GameObjects.Text[] = []
     private enemies!: Phaser.Physics.Arcade.Group
     private hudIcon!: Phaser.GameObjects.Image
     private hudIconX = 0
@@ -162,13 +161,14 @@ export class GameScene extends Phaser.Scene {
 
         // Hearts — top-left
         this.hearts = []
+        const heartFontSize = Math.round(24 * S)
         for (let i = 0; i < MAX_LIVES; i++) {
-            const heart = this.add.image(
-                Math.round(16 * S) + HEART_SIZE / 2 + i * (HEART_SIZE + HEART_GAP),
-                Math.round(24 * S),
-                'heart',
+            const heart = this.add.text(
+                Math.round(16 * S) + i * (heartFontSize + HEART_GAP),
+                Math.round(14 * S),
+                '❤️',
+                { fontSize: `${heartFontSize}px` },
             )
-            heart.setDisplaySize(HEART_SIZE, HEART_SIZE)
             heart.setScrollFactor(0)
             heart.setDepth(100)
             this.hearts.push(heart)

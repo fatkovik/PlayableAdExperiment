@@ -13,7 +13,6 @@ import {
     paypal1Url,
     obstacle1Url,
     obstacleOutlineUrl,
-    heartUrl,
     uiBannerLandscapeUrl,
     uiPaypalHeader,
     uiBackgroundPulse,
@@ -61,7 +60,7 @@ export class BootScene extends Phaser.Scene {
         this.load.image('obstacleOutline', obstacleOutlineUrl)
 
         // UI
-        this.load.image('heart', heartUrl)
+        // heart image removed — using emoji text instead
         this.load.image('uiBannerLandscape', uiBannerLandscapeUrl)
 
         this.load.image('uiFailIcon', uiFailIcon)
