@@ -12,6 +12,12 @@ import { LEVEL_DATA } from '../config/levelData'
 const MAX_LIVES = 3
 const HEART_GAP = Math.round(8 * S)
 
+const CHEERS = [
+    { x: 900,  text: 'Awesome!' },
+    { x: 2100, text: 'Amazing!' },
+    { x: 3400, text: "You're a pro!" },
+]
+
 export class GameScene extends Phaser.Scene {
     private bg!: Background
     private player!: Player
@@ -29,6 +35,7 @@ export class GameScene extends Phaser.Scene {
     private started = false
     private shownJumpHint = false
     private bannerContainer!: Phaser.GameObjects.Container
+    private nextCheerIdx = 0
 
     constructor() {
         super({ key: 'GameScene' })
@@ -188,7 +195,7 @@ export class GameScene extends Phaser.Scene {
         this.physics.pause()
 
         const tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
-            fontSize: `${Math.round(28 * S)}px`,
+            fontSize: `${Math.round(36 * S)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
@@ -248,6 +255,15 @@ export class GameScene extends Phaser.Scene {
             this.shownJumpHint = true
             this.showJumpHint()
         }
+
+        // Cheer texts at predetermined positions
+        if (this.started && this.nextCheerIdx < CHEERS.length) {
+            const cheer = CHEERS[this.nextCheerIdx]
+            if (this.player.x >= Math.round(cheer.x * S)) {
+                this.nextCheerIdx++
+                this.showCheerText(cheer.text)
+            }
+        }
     }
 
     // ── Jump hint ─────────────────────────────────────────────────────────────
@@ -298,6 +314,39 @@ export class GameScene extends Phaser.Scene {
         }
         this.input.once('pointerdown', resume)
         this.input.keyboard!.once('keydown-SPACE', resume)
+    }
+
+    // ── Cheer text popup ──────────────────────────────────────────────────────
+    private showCheerText(message: string): void {
+        const { width, height } = this.scale
+        const txt = this.add.text(width / 2, height * 0.3, message, {
+            fontSize: `${Math.round(36 * S)}px`,
+            color: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: Math.round(5 * S),
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(150).setScale(0).setAlpha(0)
+
+        // Pop in, float up, fade out
+        this.tweens.add({
+            targets: txt,
+            scaleX: 1,
+            scaleY: 1,
+            alpha: 1,
+            duration: 300,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.tweens.add({
+                    targets: txt,
+                    y: txt.y - Math.round(40 * S),
+                    alpha: 0,
+                    duration: 800,
+                    delay: 400,
+                    ease: 'Sine.easeIn',
+                    onComplete: () => { txt.destroy() },
+                })
+            },
+        })
     }
 
     // ── Coin fly-to-icon animation ─────────────────────────────────────────────
