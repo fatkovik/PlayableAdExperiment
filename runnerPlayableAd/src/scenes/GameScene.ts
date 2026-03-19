@@ -424,16 +424,19 @@ export class GameScene extends Phaser.Scene {
         const bannerTop = height - bannerH
         const bannerCenterY = bannerTop + bannerH / 2
 
-        // Background bar — stretch to fill the banner area
-        const bg = this.add.image(width / 2, bannerCenterY, 'uiBannerLandscape')
-            .setScrollFactor(0).setDisplaySize(width, bannerH)
+        // Banner image — natural aspect ratio, left-anchored; right side clips off-screen
+        const bg = this.add.image(0, bannerCenterY, 'uiBannerLandscape').setScrollFactor(0)
+        const bannerSrc = bg.texture.getSourceImage()
+        const naturalW = Math.round(bannerH * (bannerSrc.width / bannerSrc.height))
+        bg.setOrigin(0, 0.5).setDisplaySize(naturalW, bannerH)
 
         // "Download Now" button — sized relative to banner
         const btnW = Math.round(Math.min(width * 0.35, 200))
         const btnH = Math.round(bannerH * 0.6)
         const btnR = Math.round(btnH * 0.25)
         const btnX = width - btnW / 2 - Math.round(width * 0.04)
-        const btnY = bannerCenterY
+        // On narrow screens the button overlaps the banner graphics — shift it above the banner
+        const btnY = width < 750 ? bannerTop - btnH / 2 + 20 - Math.round(4) : bannerCenterY
         const btnBg = this.add.graphics()
         btnBg.fillStyle(0x00cc55, 1)
         btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
