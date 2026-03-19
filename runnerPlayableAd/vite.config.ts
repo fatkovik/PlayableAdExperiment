@@ -6,5 +6,6 @@ export default defineConfig({
   build: {
     assetsInlineLimit: Infinity,
     cssCodeSplit: false,
+    outDir: 'C:/Users/ghaza/Desktop/PlayableAd/docs',
   },
 })
