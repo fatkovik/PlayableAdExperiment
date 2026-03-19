@@ -147,7 +147,7 @@ export class GameScene extends Phaser.Scene {
 
         // Coin counter — top-right with PayPal icon underneath
         const coinIconSize = Math.round(80 * us)
-        const coinIconX = width - Math.round(100 * us)
+        const coinIconX = width - Math.round(75 * us)
         const coinIconY = Math.round(45 * us)
         this.hudIconX = coinIconX
         this.hudIconY = coinIconY
