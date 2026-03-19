@@ -96,11 +96,13 @@ export class GameScene extends Phaser.Scene {
             this.handleDeath()
         })
 
+        const coinAmount = Math.round(Math.random() * 100)
+
         // Coin → collect with fly-to-icon animation
         this.physics.add.overlap(this.player, coins, (_player, coinObj) => {
             const coin = coinObj as Coin
             coin.collect()
-            this.coinCount++
+            this.coinCount += coinAmount
             this.coinText.setText(`$${this.coinCount}`)
             this.flyCoinToIcon(coin.x, coin.y, coin.texture.key)
         })
