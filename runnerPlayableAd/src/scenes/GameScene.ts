@@ -8,9 +8,9 @@ import { FinishLine } from '../objects/FinishLine'
 import { EnvDecor } from '../objects/EnvDecor'
 import { WORLD_WIDTH, WORLD_HEIGHT, GAMEPLAY_Y, GROUND_HEIGHT, STORE_URL, S } from '../config/gameConfig'
 import { LEVEL_DATA } from '../config/levelData'
+import { uiScale, fitText } from '../utils/ui'
 
 const MAX_LIVES = 3
-const HEART_GAP = Math.round(8 * S)
 
 const CHEERS = [
     { x: 1200,  text: 'Awesome!' },
@@ -141,11 +141,12 @@ export class GameScene extends Phaser.Scene {
         this.lives = MAX_LIVES
 
         const { width, height } = this.scale
+        const us = uiScale(this)
 
         // Coin counter — top-right with PayPal icon underneath
-        const coinIconSize = Math.round(80 * S)
-        const coinIconX = width - Math.round(100 * S)
-        const coinIconY = Math.round(45 * S)
+        const coinIconSize = Math.round(80 * us)
+        const coinIconX = width - Math.round(100 * us)
+        const coinIconY = Math.round(45 * us)
         this.hudIconX = coinIconX
         this.hudIconY = coinIconY
         this.hudIcon = this.add.image(coinIconX, coinIconY, 'uiPaypalHeader')
@@ -156,13 +157,13 @@ export class GameScene extends Phaser.Scene {
         this.hudIconBaseScaleX = this.hudIcon.scaleX
         this.hudIconBaseScaleY = this.hudIcon.scaleY
 
-        const cointTextX = coinIconX + Math.round(20 * S)
+        const cointTextX = coinIconX + Math.round(20 * us)
         const coinTextY = coinIconY
 
         this.coinText = this.add
             .text(cointTextX, coinTextY, '$0', {
-                fontSize: `${Math.round(20 * S)}px`, color: '#1b49f2',
-                stroke: '#000000', strokeThickness: Math.round(2 * S),
+                fontSize: `${Math.round(20 * us)}px`, color: '#1b49f2',
+                stroke: '#000000', strokeThickness: Math.round(2 * us),
             })
             .setOrigin(0.5)
             .setScrollFactor(0)
@@ -170,11 +171,12 @@ export class GameScene extends Phaser.Scene {
 
         // Hearts — top-left
         this.hearts = []
-        const heartFontSize = Math.round(24 * S)
+        const heartFontSize = Math.round(24 * us)
+        const heartGap = Math.round(8 * us)
         for (let i = 0; i < MAX_LIVES; i++) {
             const heart = this.add.text(
-                Math.round(16 * S) + i * (heartFontSize + HEART_GAP),
-                Math.round(14 * S),
+                Math.round(16 * us) + i * (heartFontSize + heartGap),
+                Math.round(14 * us),
                 '❤️',
                 { fontSize: `${heartFontSize}px` },
             )
@@ -195,35 +197,37 @@ export class GameScene extends Phaser.Scene {
         this.physics.pause()
 
         const tapText = this.add.text(width / 2, height * 0.38, 'Tap to start earning!', {
-            fontSize: `${Math.round(36 * S)}px`,
+            fontSize: `${Math.round(36 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: Math.round(4 * S),
+            strokeThickness: Math.round(4 * us),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
+        fitText(tapText, width * 0.9)
 
         const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
         const handSrc = hand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
-        const handH = Math.round(60 * S)
+        const handH = Math.round(60 * us)
         hand.setDisplaySize(handH * handRatio, handH)
 
         // Small bobbing animation on the hand
         this.tweens.add({
             targets: hand,
-            y: height * 0.52 + Math.round(10 * S),
+            y: height * 0.52 + Math.round(10 * us),
             duration: 600,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut',
         })
 
-        // Pulse the text slightly
+        // Pulse the text slightly (relative to fitted scale)
+        const tapBaseScale = tapText.scaleX
         this.tweens.add({
             targets: tapText,
-            scaleX: 1.05,
-            scaleY: 1.05,
+            scaleX: tapBaseScale * 1.05,
+            scaleY: tapBaseScale * 1.05,
             duration: 800,
             yoyo: true,
             repeat: -1,
@@ -271,34 +275,37 @@ export class GameScene extends Phaser.Scene {
         this.physics.pause()
         this.player.anims.pause()
         const { width, height } = this.scale
+        const us = uiScale(this)
 
         const hintText = this.add.text(width / 2, height * 0.38, 'Jump to avoid enemies!', {
-            fontSize: `${Math.round(28 * S)}px`,
+            fontSize: `${Math.round(28 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: Math.round(4 * S),
+            strokeThickness: Math.round(4 * us),
         }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
+        fitText(hintText, width * 0.9)
 
         const hand = this.add.image(width / 2, height * 0.52, 'uiPointerHand')
             .setScrollFactor(0).setDepth(150)
         const handSrc = hand.texture.getSourceImage()
         const handRatio = handSrc.width / handSrc.height
-        hand.setDisplaySize(Math.round(60 * S) * handRatio, Math.round(60 * S))
+        hand.setDisplaySize(Math.round(60 * us) * handRatio, Math.round(60 * us))
 
         this.tweens.add({
             targets: hand,
-            y: height * 0.52 + Math.round(10 * S),
+            y: height * 0.52 + Math.round(10 * us),
             duration: 600,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut',
         })
 
+        const hintBaseScale = hintText.scaleX
         this.tweens.add({
             targets: hintText,
-            scaleX: 1.05,
-            scaleY: 1.05,
+            scaleX: hintBaseScale * 1.05,
+            scaleY: hintBaseScale * 1.05,
             duration: 800,
             yoyo: true,
             repeat: -1,
@@ -319,26 +326,30 @@ export class GameScene extends Phaser.Scene {
     // ── Cheer text popup ──────────────────────────────────────────────────────
     private showCheerText(message: string): void {
         const { width, height } = this.scale
+        const us = uiScale(this)
         const txt = this.add.text(width / 2, height * 0.3, message, {
-            fontSize: `${Math.round(36 * S)}px`,
+            fontSize: `${Math.round(36 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: Math.round(5 * S),
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(150).setScale(0).setAlpha(0)
+            strokeThickness: Math.round(5 * us),
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(150)
+        fitText(txt, width * 0.9)
+        const cheerTargetScale = txt.scaleX
+        txt.setScale(0).setAlpha(0)
 
         // Pop in, float up, fade out
         this.tweens.add({
             targets: txt,
-            scaleX: 1,
-            scaleY: 1,
+            scaleX: cheerTargetScale,
+            scaleY: cheerTargetScale,
             alpha: 1,
             duration: 300,
             ease: 'Back.easeOut',
             onComplete: () => {
                 this.tweens.add({
                     targets: txt,
-                    y: txt.y - Math.round(40 * S),
+                    y: txt.y - Math.round(40 * us),
                     alpha: 0,
                     duration: 800,
                     delay: 400,
@@ -404,28 +415,30 @@ export class GameScene extends Phaser.Scene {
     private createBottomBanner(): void {
         const { width, height } = this.scale
 
-        // Background bar — preserve native aspect ratio
-        const bg = this.add.image(0, 0, 'uiBannerLandscape').setScrollFactor(0)
-        const bannerSrc = bg.texture.getSourceImage()
-        const bannerRatio = bannerSrc.width / bannerSrc.height
-        const bannerH = Math.round(width / bannerRatio)
-        const bannerY = height - bannerH / 2
-        bg.setPosition(width / 2, bannerY)
-        bg.setDisplaySize(width, bannerH)
+        // Banner height: 10% of screen height, clamped to a sane range
+        const bannerH = Math.round(Math.max(height * 0.08, Math.min(height * 0.12, 80)))
+        const bannerTop = height - bannerH
+        const bannerCenterY = bannerTop + bannerH / 2
 
-        // "Download Now" button — drawn centered at (0,0) inside a container
-        const btnW = Math.round(160 * S)
-        const btnH = Math.round(40 * S)
-        const btnX = width - Math.round(100 * S)
-        const btnY = bannerY + Math.round(10 * S)
+        // Background bar — stretch to fill the banner area
+        const bg = this.add.image(width / 2, bannerCenterY, 'uiBannerLandscape')
+            .setScrollFactor(0).setDisplaySize(width, bannerH)
+
+        // "Download Now" button — sized relative to banner
+        const btnW = Math.round(Math.min(width * 0.35, 200))
+        const btnH = Math.round(bannerH * 0.6)
+        const btnR = Math.round(btnH * 0.25)
+        const btnX = width - btnW / 2 - Math.round(width * 0.04)
+        const btnY = bannerCenterY
         const btnBg = this.add.graphics()
         btnBg.fillStyle(0x00cc55, 1)
-        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, Math.round(10 * S))
+        btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
         btnBg.lineStyle(2, 0xffffff, 0.5)
-        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, Math.round(10 * S))
+        btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
 
+        const btnFontSize = Math.max(10, Math.round(Math.min(btnH * 0.45, btnW * 0.11)))
         const btnLabel = this.add.text(0, 0, 'Download Now', {
-            fontSize: `${Math.round(18 * S)}px`, color: '#ffffff', fontStyle: 'bold',
+            fontSize: `${btnFontSize}px`, color: '#ffffff', fontStyle: 'bold',
         }).setOrigin(0.5)
 
         const btnContainer = this.add.container(btnX, btnY, [btnBg, btnLabel])
@@ -450,7 +463,7 @@ export class GameScene extends Phaser.Scene {
         })
 
         // Make the whole banner also clickable
-        const bannerZone = this.add.zone(width / 2, bannerY, width, bannerH)
+        const bannerZone = this.add.zone(width / 2, bannerCenterY, width, bannerH)
             .setInteractive({ useHandCursor: true }).setScrollFactor(0)
         bannerZone.on('pointerdown', (p: Phaser.Input.Pointer) => {
             p.event.stopPropagation()
@@ -502,8 +515,9 @@ export class GameScene extends Phaser.Scene {
         const icon = this.add.image(width / 2, height * 0.4, 'uiFailIcon')
             .setScrollFactor(0)
             .setDepth(200)
-            .setScale(0)
-            .setAlpha(0)
+        // Cap icon so it fits within viewport
+        const iconMaxScale = Math.min(1, (width * 0.8) / icon.width, (height * 0.4) / icon.height)
+        icon.setScale(0).setAlpha(0)
 
         // Fade in overlay + pulse, then scale up icon
         this.tweens.add({
@@ -513,11 +527,11 @@ export class GameScene extends Phaser.Scene {
             ease: 'Sine.easeOut',
         })
 
-        // Scale up from 0 → 1 with a bounce
+        // Scale up from 0 → target with a bounce
         this.tweens.add({
             targets: icon,
-            scaleX: 1,
-            scaleY: 1,
+            scaleX: iconMaxScale,
+            scaleY: iconMaxScale,
             alpha: 1,
             duration: 500,
             ease: 'Back.easeOut',

@@ -1,9 +1,9 @@
 import Phaser from 'phaser'
-import { STORE_URL, S } from '../config/gameConfig'
+import { STORE_URL } from '../config/gameConfig'
+import { uiScale, fitText } from '../utils/ui'
 
 // Confetti colours
 const CONFETTI_COLORS = [0xff0000, 0x00cc44, 0x2288ff, 0xffdd00, 0xff66cc, 0xffffff]
-const CONFETTI_SIZE = Math.round(6 * S)
 
 export class EndScene extends Phaser.Scene {
     private coinCount = 0
@@ -22,6 +22,8 @@ export class EndScene extends Phaser.Scene {
     create(): void {
         const { width, height } = this.scale
         const cx = width / 2
+        const us = uiScale(this)
+        const confettiSize = Math.round(6 * us)
 
         // ── Semi-transparent overlay ───────────────────────────────────────────
         this.cameras.main.setBackgroundColor('rgba(0,0,0,0)')
@@ -46,7 +48,7 @@ export class EndScene extends Phaser.Scene {
 
         // ── Confetti particles (win only) ────────────────────────────────────
         if (this.won) {
-            this.createConfetti(width)
+            this.createConfetti(width, confettiSize)
         }
 
         // ── Title text ─────────────────────────────────────────────────────────
@@ -56,33 +58,35 @@ export class EndScene extends Phaser.Scene {
         const subtitleStr = this.won ? 'Choose your reward!' : 'Try again on the app!'
 
         const title = this.add.text(cx, titleY, titleStr, {
-            fontSize: `${Math.round(36 * S)}px`,
+            fontSize: `${Math.round(36 * us)}px`,
             color: titleColor,
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: Math.round(4 * S),
+            strokeThickness: Math.round(4 * us),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
+        fitText(title, width * 0.9)
 
-        const subtitle = this.add.text(cx, titleY + Math.round(40 * S), subtitleStr, {
-            fontSize: `${Math.round(18 * S)}px`,
+        const subtitle = this.add.text(cx, titleY + Math.round(40 * us), subtitleStr, {
+            fontSize: `${Math.round(18 * us)}px`,
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: Math.round(2 * S),
+            strokeThickness: Math.round(2 * us),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
+        fitText(subtitle, width * 0.9)
 
         this.tweens.add({
             targets: [title, subtitle],
             alpha: 1,
-            y: `-=${Math.round(10 * S)}`,
+            y: `-=${Math.round(10 * us)}`,
             duration: 500,
             ease: 'Back.easeOut',
         })
 
         // ── White card ─────────────────────────────────────────────────────────
-        const cardW = width * 0.3
-        const cardH = height * 0.28
+        const cardW = Math.min(width * 0.7, Math.round(300 * us))
+        const cardH = Math.min(height * 0.28, Math.round(200 * us))
         const cardY = height * 0.42
-        const cardR = Math.round(16 * S)
+        const cardR = Math.round(16 * us)
 
         const card = this.add.graphics().setDepth(10)
         card.fillStyle(0xffffff, 1)
@@ -90,7 +94,7 @@ export class EndScene extends Phaser.Scene {
         // Subtle shadow
         const shadow = this.add.graphics().setDepth(9)
         shadow.fillStyle(0x000000, 0.2)
-        shadow.fillRoundedRect(cx - cardW / 2 + Math.round(4 * S), cardY - cardH / 2 + Math.round(4 * S), cardW, cardH, cardR)
+        shadow.fillRoundedRect(cx - cardW / 2 + Math.round(4 * us), cardY - cardH / 2 + Math.round(4 * us), cardW, cardH, cardR)
 
         // Scale-in the card
         const cardContainer = this.add.container(0, 0, [shadow, card]).setDepth(10)
@@ -115,10 +119,11 @@ export class EndScene extends Phaser.Scene {
 
         // Money amount with count-up
         const moneyText = this.add.text(cx, cardY + cardH * 0.22, '$0.00', {
-            fontSize: `${Math.round(32 * S)}px`,
+            fontSize: `${Math.round(32 * us)}px`,
             color: '#222222',
             fontStyle: 'bold',
         }).setOrigin(0.5).setDepth(11).setAlpha(0)
+        fitText(moneyText, cardW * 0.85)
 
         // Fade in card contents after card scales in
         this.time.delayedCall(500, () => {
@@ -143,20 +148,21 @@ export class EndScene extends Phaser.Scene {
         })
 
         // ── Countdown timer area ───────────────────────────────────────────────
-        const timerY = cardY + cardH / 2 + Math.round(40 * S)
+        const timerY = cardY + cardH / 2 + Math.round(40 * us)
         let seconds = 60
         const timerText = this.add.text(cx, timerY, '00:41', {
-            fontSize: `${Math.round(28 * S)}px`,
+            fontSize: `${Math.round(28 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: Math.round(3 * S),
+            strokeThickness: Math.round(3 * us),
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
 
-        const timerSub = this.add.text(cx, timerY + Math.round(28 * S), 'Next payment in one minute', {
-            fontSize: `${Math.round(13 * S)}px`,
+        const timerSub = this.add.text(cx, timerY + Math.round(28 * us), 'Next payment in one minute', {
+            fontSize: `${Math.round(13 * us)}px`,
             color: '#cccccc',
         }).setOrigin(0.5).setDepth(10).setAlpha(0)
+        fitText(timerSub, width * 0.85)
 
         this.tweens.add({
             targets: [timerText, timerSub],
@@ -178,42 +184,43 @@ export class EndScene extends Phaser.Scene {
         })
 
         // ── "INSTALL AND EARN" button ──────────────────────────────────────────
-        const btnY = height - Math.round(60 * S)
-        const btnW = width * 0.55
-        const btnH = Math.round(52 * S)
-        const btnR = Math.round(12 * S)
+        const btnY = height - Math.round(60 * us)
+        const btnW = Math.min(width * 0.85, Math.round(400 * us))
+        const btnH = Math.round(52 * us)
+        const btnR = Math.round(12 * us)
 
         // Button — drawn centered at (0,0) inside container
         const btnBg = this.add.graphics()
         if (this.won) {
             btnBg.fillStyle(0xe68a00, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * S), btnW, btnH - Math.round(3 * S), btnR)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * us), btnW, btnH - Math.round(3 * us), btnR)
             btnBg.fillStyle(0xffbb00, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * S), btnR)
-            btnBg.lineStyle(Math.round(2 * S), 0xcc7700, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * us), btnR)
+            btnBg.lineStyle(Math.round(2 * us), 0xcc7700, 1)
             btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
         } else {
             btnBg.fillStyle(0x991111, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * S), btnW, btnH - Math.round(3 * S), btnR)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2 + Math.round(3 * us), btnW, btnH - Math.round(3 * us), btnR)
             btnBg.fillStyle(0xcc2222, 1)
-            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * S), btnR)
-            btnBg.lineStyle(Math.round(2 * S), 0x880000, 1)
+            btnBg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH - Math.round(6 * us), btnR)
+            btnBg.lineStyle(Math.round(2 * us), 0x880000, 1)
             btnBg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, btnR)
         }
 
         const btnStroke = this.won ? '#663300' : '#440000'
-        const btnLabel = this.add.text(0, -Math.round(2 * S), 'INSTALL AND EARN', {
-            fontSize: `${Math.round(22 * S)}px`,
+        const btnLabel = this.add.text(0, -Math.round(2 * us), 'INSTALL AND EARN', {
+            fontSize: `${Math.round(22 * us)}px`,
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: btnStroke,
-            strokeThickness: Math.round(3 * S),
+            strokeThickness: Math.round(3 * us),
         }).setOrigin(0.5)
+        fitText(btnLabel, btnW * 0.85)
 
         const btnContainer = this.add.container(cx, btnY, [btnBg, btnLabel]).setDepth(20)
 
         // Slide up from below
-        btnContainer.y = btnY + Math.round(80 * S)
+        btnContainer.y = btnY + Math.round(80 * us)
         btnContainer.setAlpha(0)
         this.tweens.add({
             targets: btnContainer,
@@ -248,22 +255,23 @@ export class EndScene extends Phaser.Scene {
     }
 
     // ── Confetti ──────────────────────────────────────────────────────────────
-    private createConfetti(w: number): void {
+    private createConfetti(w: number, size: number): void {
+        const us = uiScale(this)
         CONFETTI_COLORS.forEach((color, i) => {
             const key = `confetti${i}`
             if (this.textures.exists(key)) return
             const gfx = this.add.graphics()
             gfx.fillStyle(color, 1)
-            gfx.fillRect(0, 0, CONFETTI_SIZE, CONFETTI_SIZE)
-            gfx.generateTexture(key, CONFETTI_SIZE, CONFETTI_SIZE)
+            gfx.fillRect(0, 0, size, size)
+            gfx.generateTexture(key, size, size)
             gfx.destroy()
         })
 
         CONFETTI_COLORS.forEach((_color, i) => {
-            this.add.particles(w / 2, -Math.round(10 * S), `confetti${i}`, {
+            this.add.particles(w / 2, -Math.round(10 * us), `confetti${i}`, {
                 x: { min: -w / 2, max: w / 2 },
-                speedY: { min: 60 * S, max: 200 * S },
-                speedX: { min: -80 * S, max: 80 * S },
+                speedY: { min: 60 * us, max: 200 * us },
+                speedX: { min: -80 * us, max: 80 * us },
                 angle: { min: 0, max: 360 },
                 rotate: { min: 0, max: 360 },
                 scale: { start: 1, end: 0.3 },
@@ -271,7 +279,7 @@ export class EndScene extends Phaser.Scene {
                 lifespan: { min: 2000, max: 4000 },
                 frequency: 120,
                 quantity: 1,
-                gravityY: 40 * S,
+                gravityY: 40 * us,
             }).setDepth(5)
         })
     }

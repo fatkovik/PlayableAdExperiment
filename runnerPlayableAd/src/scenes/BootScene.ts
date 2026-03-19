@@ -77,8 +77,8 @@ export class BootScene extends Phaser.Scene {
         const { width, height } = this.scale
         const cx = width / 2
         const cy = height / 2
-        const s = Math.max(1, height / 600)
-        const barW = Math.round(400 * s)
+        const s = Math.max(1, Math.min(width, height) / 600)
+        const barW = Math.min(Math.round(400 * s), width - 40)
         const barH = Math.round(20 * s)
 
         this.add.text(cx, cy - Math.round(40 * s), 'Loading…', {
