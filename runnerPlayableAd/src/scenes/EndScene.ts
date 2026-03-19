@@ -133,7 +133,7 @@ export class EndScene extends Phaser.Scene {
             this.tweens.add({
                 targets: counter,
                 val: this.coinCount,
-                duration: Math.max(400, this.coinCount * 80),
+                duration: 500,
                 ease: 'Cubic.easeOut',
                 delay: 200,
                 onUpdate: () => {

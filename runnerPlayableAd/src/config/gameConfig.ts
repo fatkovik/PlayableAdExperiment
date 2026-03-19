@@ -3,7 +3,7 @@
 // is CSS-upscaled which looks blurry.  We compute a scale factor so the canvas
 // renders at (approximately) the device's native resolution.
 const DESIGN_H = 600
-export const S = Math.max(1, window.innerHeight / DESIGN_H)
+export const S = Math.max(1, Math.min(window.innerWidth, window.innerHeight) / DESIGN_H)
 
 // ── World ─────────────────────────────────────────────────────────────────────
 export const WORLD_WIDTH  = Math.round(4000 * S)
