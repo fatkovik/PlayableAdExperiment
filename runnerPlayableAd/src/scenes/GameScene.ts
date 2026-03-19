@@ -190,6 +190,12 @@ export class GameScene extends Phaser.Scene {
         // ── Bottom banner (CTA) ─────────────────────────────────────────────────
         this.createBottomBanner()
 
+        // ── Dynamic resize ──────────────────────────────────────────────────────
+        this.scale.on('resize', this.handleResize, this)
+        this.events.on('shutdown', () => {
+            this.scale.off('resize', this.handleResize, this)
+        })
+
         // ── Tap to start ────────────────────────────────────────────────────────
         this.started = false
         // Player origin is (2, 0.5) — position y is the vertical center.
@@ -413,6 +419,48 @@ export class GameScene extends Phaser.Scene {
                 })
             },
         })
+    }
+
+    // ── Dynamic resize ────────────────────────────────────────────────────────
+    private handleResize(gameSize: Phaser.Structs.Size): void {
+        const w = gameSize.width
+        const h = gameSize.height
+        const us = Math.max(1, Math.min(w, h) / 600)
+
+        // Reposition coin icon
+        const coinIconSize = Math.round(80 * us)
+        const coinIconX = w - Math.round(75 * us)
+        const coinIconY = Math.round(45 * us)
+        this.hudIconX = coinIconX
+        this.hudIconY = coinIconY
+        this.hudIcon.setPosition(coinIconX, coinIconY)
+        const pSrc = this.hudIcon.texture.getSourceImage()
+        const pRatio = pSrc.width / pSrc.height
+        this.hudIcon.setDisplaySize(coinIconSize * pRatio, coinIconSize)
+        this.hudIconBaseScaleX = this.hudIcon.scaleX
+        this.hudIconBaseScaleY = this.hudIcon.scaleY
+
+        // Reposition coin text
+        this.coinText.setPosition(coinIconX + Math.round(20 * us), coinIconY)
+        this.coinText.setFontSize(Math.round(20 * us))
+        this.coinText.setStroke('#000000', Math.round(2 * us))
+
+        // Reposition hearts
+        const heartFontSize = Math.round(24 * us)
+        const heartGap = Math.round(8 * us)
+        for (let i = 0; i < this.hearts.length; i++) {
+            this.hearts[i].setPosition(
+                Math.round(16 * us) + i * (heartFontSize + heartGap),
+                Math.round(14 * us),
+            )
+            this.hearts[i].setFontSize(heartFontSize)
+        }
+
+        // Recreate banner (handles portrait/landscape switch)
+        if (this.bannerContainer) {
+            this.bannerContainer.destroy()
+        }
+        this.createBottomBanner()
     }
 
     // ── Bottom banner ─────────────────────────────────────────────────────────
